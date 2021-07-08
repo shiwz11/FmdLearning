@@ -1,6 +1,6 @@
 baseurl: /
 languageCode: en-us
-title: A Hugo website
+title: Shiwz11's Learning Notes
 theme: hugo-lithium
 googleAnalytics: ''
 disqusShortname: ''
@@ -17,9 +17,9 @@ menu:
     - name: About
       url: /about/
     - name: GitHub
-      url: https://github.com/rstudio/blogdown
-    - name: Twitter
-      url: https://twitter.com/rstudio
+      url: https://github.com/shiwz11
+    - name: WeChat
+      url: https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/GongZhongHao.jpg
 params:
   MathJaxCDN: //cdnjs.cloudflare.com/ajax/libs
   MathJaxVersion: 2.7.5
