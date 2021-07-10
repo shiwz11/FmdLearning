@@ -1,0 +1,100 @@
+---
+title: BiaoQingTutorial
+author: Shiwz11
+date: '2021-07-10'
+slug: biaoqingtutorial
+categories:
+  - Others
+tags:
+  - Others
+---
+
+# 写在前面
+
+献给我美丽的学姐，祝你永远年轻
+
+# 制作
+
+以下提供几个网站（软件、手机app）它们有的提供素材，有的自带工具，分别实现了不同的功能。
+
+## 电脑端工具
+
+### 纯工具
+
+1. ScreenToGif，[点击下载](https://www.screentogif.com/)
+
+2. 在线ps(UUPOOP，需要注册登录)[点击跳转](https://www.uupoop.com/#/)
+
+### 纯素材
+
+1. 素材（支持关键词搜索）[点击跳转](https://www.v2fy.com/asset/0i/ChineseBQB/)
+
+2. [我爱斗图](https://www.52doutu.cn/)
+
+3. [EmojiPackage](https://gitee.com/isheroleon/EmojiPackage?_from=gitee_search)有动态也有静态
+
+### 素材加工具
+
+1. [动态图可编辑文字，不支持关键字搜索](https://www.asqql.com/bqzz/index_2.html)
+
+2. [哇咔工具](https://www.wakatool.com/maker)
+
+该网站很有意思，可以自由组合**各种姿势、表情、文字**；若该网站不能访问，点击[此处](https://www.doutula.com/maker)
+
+## 手机端工具
+
+[表情in](http://snapemoji.net/snapemoji.html)，该app有安卓和苹果客户端，支持关键字搜索并自定义图片文字。
+
+## 静态
+
+静态图的素材可上面提供的网站中下载。下载的图片分两种情况：
+
+1. 图片很干净，没有多余文字
+
+可以使用软件[ScreenToGif](https://www.screentogif.com/)或者在线工具[UUPOOP](https://www.uupoop.com/#/)或者[哇咔工具](https://www.wakatool.com/maker)或者手机软件[表情in](http://snapemoji.net/snapemoji.html)，四个工具任选其一，即可在原图片添加文字。
+
+2. 图片本身带有文字，而又真的相中了这张图
+
+使用[UUPOOP，需登录](https://www.uupoop.com/#/)
+
+打开网站，点击**上传图片**
+
+![UUOOP01](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/BiaoQing01.png)
+
+点击左侧**消除笔**将文字涂掉
+
+![UUOOP02](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/BiaoQing02.png)
+
+就能得到如下图效果，然后，点击文字，添加自己的文字之后，下载即可
+
+![UUOOP03](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/BiaoQing03.png)
+
+## 动态
+
+若动态图本身包含文字，那就很麻烦了，需要使用更专业的软件来解决，所以我建议找那种不包含文字的素材。
+
+动态图需要使用软件[ScreenToGif](https://www.screentogif.com/)
+
+打开软件，点击文件-->媒体或项目，然后上传下载好的动态素材
+
+![UUOOP03](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/BiaoQing04.png)
+
+注意，需要`ctrl+a`来选中动态图的所有帧，点击图像，自由文本，右侧可输入文本内容，调整字体，大小、位置等。调整好之后，点击应用即可
+
+![UUOOP03](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/BiaoQing05.png)
+
+然后，点击“文件”-->“另存为”，设置好保存路径和文件名之后，保存就完成了。
+
+![UUOOP03](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/BiaoQing06.png)
+
+# 导入、使用、管理
+
+目前没有找到批量导入的方法，只能通过**文件传输助手**传送图片，然后手动一张张添加为表情。但是不建议这么做，因为微信根本就没有对表情分类管理的机制，添加多了就乱七八糟。
+
+## 微信
+
+不幸的是，微信自定义表情包并没有分类管理的功能，只能散乱的堆在那。要想分类管理，只能在手机或电脑上的文件管理中按分类建立不同的文件夹分别保存。需要使用的时候，直接从文件夹中搜索，然后传输到微信里。
+
+## QQ
+
+QQ端的表情管理相对友好，至少可以给表情添加标签来分类，具体教程[点击此处跳转](https://jingyan.baidu.com/article/4853e1e53cca2f5808f72602.html)；或者也可以和微信一样，自行建立文件夹，自行分类存储。
