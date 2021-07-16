@@ -66,6 +66,155 @@ rank_s = \sum_{i}^{n} sign(i) rank_{s}(i)
 </div>
 <div id="期货连续合约" class="section level3">
 <h3>期货连续合约</h3>
+<p>创建一个连续合约的第一步是在给定数个展期日的情况下，先将近月交割合约的价格组合起来。但这种情况下，在展期日前一天和展期日当天就会出现一个明显的价格gap，而这会造成回测中收益的错误。</p>
+</div>
+<div id="期货收盘价和结算价" class="section level3">
+<h3>期货收盘价和结算价</h3>
+<p>一般来说，供应商提供的期货收盘价实际上是结算价，而不是当天最后一笔期货交易的成交价。一般来说，结算价和当前最后一笔交易的成交价并不一样。需要注意的是，有些数据供应商会提供逐笔交易的数据，这种数据是真实的交易价格。在这种情况下，收盘价将会是最后一笔交易的价格。</p>
+<p>大多数情况下，我们应当使用结算价，因为，如果你在临近收市的时候交易的话，改价格最为接近你的成交价格。后面的不太明白了</p>
+<p>如果你构建一个日间利差交易策略或者使用日间期货价格来回测你的利差策略，那么，你将会用到买卖双方的bid和ask价格；当利差为负的时候，你将会需要该利差数据的日间原始数据。</p>
+<p>不同券最后一笔的利差策略需要注意一点就是，他们的最后一笔交易发生时间往往是不同步的，如果相差较多，可能对利率收益的实现产生影响。</p>
+<p>市场间利差策略的一个需要注意的点是，如果合约是在不同的交易所交易的，那么，他们可能会有不同的收市时间，因此使用其收盘价来做利差策略是不可行的。总之，要注意其交易时间的同步性。</p>
+</div>
+<div id="回测的统计显著性假设检验" class="section level3">
+<h3>回测的统计显著性：假设检验</h3>
+<p>回测中的统计检验遵循以下步骤：</p>
+<ol style="list-style-type: decimal">
+<li><p>基于有限样本，我们首先计算出待检验指标，比如某策略的日平均收益；</p></li>
+<li><p>原假设：基于无限样本的真实日平均收益为0；</p></li>
+<li><p>假设日收益的分布已知，并且又零均值；</p></li>
+<li><p>然后根据假设的概率分布计算出p值，来决定是否拒绝原假设，并确定其显著性水平。</p></li>
+</ol>
+<p>其中，比较麻烦的是第三步，怎么确定其概率分布。一个简单的做法是，假设其为高斯分布，然后，根据样本的标准差估算其分布标准差，一般来说，有高夏普比率更容易得到统计显著的结果。另一种方法是使用蒙特卡洛模拟出历史价格数据，并将模拟结果代回我们的策略来推断出收益的概率分布。</p>
+<p>第三种方法由Andrew Lo and his collaborators (Lo, Mamaysky, and Wang, 2000)提出，在该方法中，不模拟价格数据，而是根据真实交易数据产生出模拟的交易数据。很显然的一点是，三种方法得出的概率分布进行的假设检验很可能会得出不同的结果。</p>
+<p><strong>Example 1.1</strong>：</p>
+<p>该例子针对第六章的动量策略实施了上述三种假设检验。若策略产生12个月的正收益，则购买期货并持有一个月。</p>
+<ul>
+<li>第一种检验方法</li>
+</ul>
+<p>该方法很简单，假设数据服从零均值的高斯分布，标准差来自于样本数据。假设<code>ret</code>是一个<span class="math inline">\(T\times 1\)</span>的array。使用matlab计算其统计量如下：</p>
+<pre class="matlab"><code># matlab and R
+mean(ret) / std(ret)*sqrt(length(ret))</code></pre>
+<ul>
+<li>第二种检验方法</li>
+</ul>
+<p>该方法针对期货合约产生出一系列模拟的每日汇报数据（请注意，不是模拟策略的收益率）。模拟出的数据相比于真实数据会有相同的均值、标准差、峰度和偏度。如果我们测试发现我们的策略在模拟的数据中相比于真实数据中，能产生一样好甚至更好的收益，那么<strong>很不幸</strong>，这说明，我们的策略没有抓住真实数据的任何趋势和序列相关性。而其之所以能盈利仅仅是因为运气。</p>
+<p>使用matlab来模拟出之前所述的数据，然后，我们使用模拟出的收益数据模拟出价格数据，最后，我么在模拟出的数据上跑10000次我们的策略，并观察其收益率。统计出有多少次，其收益率大于等于真实数据上的收益率。</p>
+<pre class="matlab"><code># matlab
+clear;
+
+% load(&#39;../Data/inputDataOHLCDaily_20120511&#39;, &#39;syms&#39;, &#39;tday&#39;, &#39;cl&#39;);
+load(&#39;inputDataOHLCDaily_20120511&#39;, &#39;syms&#39;, &#39;tday&#39;, &#39;cl&#39;);
+idx=strmatch(&#39;TU&#39;, syms, &#39;exact&#39;);
+
+tday=tday(:, idx);
+cl=cl(:, idx);
+
+lookback=250;
+holddays=25;
+
+longs=cl &gt; backshift(lookback, cl)  ;
+shorts=cl &lt; backshift(lookback, cl) ;
+
+pos=zeros(length(cl), 1);
+
+for h=0:holddays-1
+    long_lag=backshift(h, longs);
+    long_lag(isnan(long_lag))=false;
+    long_lag=logical(long_lag);
+    
+    short_lag=backshift(h, shorts);
+    short_lag(isnan(short_lag))=false;
+    short_lag=logical(short_lag);
+    
+    pos(long_lag)=pos(long_lag)+1;
+    pos(short_lag)=pos(short_lag)-1;
+end
+
+marketRet=(cl-backshift(1, cl))./backshift(1, cl);
+marketRet(~isfinite(marketRet))=0;
+
+ret=backshift(1, pos).*marketRet/holddays;
+
+ret(isnan(ret))=0;
+
+% Gaussian hypothesis test
+fprintf(1, &#39;Gaussian Test statistic=%4.2f\n&#39;, mean(ret)/std(ret)*sqrt(length(ret)));
+% Gaussian Test statistic=2.93
+
+% Randomized market returns hypothesis test
+moments={mean(marketRet), std(marketRet), skewness(marketRet), kurtosis(marketRet)};
+numSampleAvgretBetterOrEqualObserved=0;
+for sample=1:10000
+    marketRet_sim=pearsrnd(moments{:}, length(marketRet), 1);
+    cl_sim=cumprod(1+marketRet_sim)-1;
+    
+    longs_sim=cl_sim &gt; backshift(lookback, cl_sim)  ;
+    shorts_sim=cl_sim &lt; backshift(lookback, cl_sim) ;
+    
+    pos_sim=zeros(length(cl_sim), 1);
+    
+    for h=0:holddays-1
+        long_sim_lag=backshift(h, longs_sim);
+        long_sim_lag(isnan(long_sim_lag))=false;
+        long_sim_lag=logical(long_sim_lag);
+        
+        short_sim_lag=backshift(h, shorts_sim);
+        short_sim_lag(isnan(short_sim_lag))=false;
+        short_sim_lag=logical(short_sim_lag);
+        
+        pos_sim(long_sim_lag)=pos_sim(long_sim_lag)+1;
+        pos_sim(short_sim_lag)=pos_sim(short_sim_lag)-1;
+    end
+
+    
+    ret_sim=backshift(1, pos_sim).*marketRet_sim/holddays;
+    ret_sim(~isfinite(ret_sim))=0;
+    
+    if (mean(ret_sim)&gt;= mean(ret))
+        numSampleAvgretBetterOrEqualObserved=numSampleAvgretBetterOrEqualObserved+1;
+    end
+end
+
+fprintf(1, &#39;Randomized prices: p-value=%f\n&#39;, numSampleAvgretBetterOrEqualObserved/10000);
+% p-value=0.027500
+
+
+% Randomized entry trades hypothesis test
+
+numSampleAvgretBetterOrEqualObserved=0;
+for sample=1:100000
+    P=randperm(length(longs));
+    longs_sim=longs(P);
+    shorts_sim=shorts(P);
+    
+    pos_sim=zeros(length(cl), 1);
+
+    for h=0:holddays-1
+        long_sim_lag=backshift(h, longs_sim);
+        long_sim_lag(isnan(long_sim_lag))=false;
+        long_sim_lag=logical(long_sim_lag);
+        
+        short_sim_lag=backshift(h, shorts_sim);
+        short_sim_lag(isnan(short_sim_lag))=false;
+        short_sim_lag=logical(short_sim_lag);
+        
+        pos(long_sim_lag)=pos(long_sim_lag)+1;
+        pos(short_sim_lag)=pos(short_sim_lag)-1;
+    end
+
+    ret_sim=backshift(1, pos_sim).*marketRet/holddays;
+
+    ret_sim(isnan(ret_sim))=0;
+    
+  
+    if (mean(ret_sim)&gt;= mean(ret))
+        numSampleAvgretBetterOrEqualObserved=numSampleAvgretBetterOrEqualObserved+1;
+    end
+
+end
+fprintf(1, &#39;Randomized trades: p-value=%f\n&#39;, numSampleAvgretBetterOrEqualObserved/100000);</code></pre>
+<p>书中的结果</p>
 </div>
 </div>
 </div>
