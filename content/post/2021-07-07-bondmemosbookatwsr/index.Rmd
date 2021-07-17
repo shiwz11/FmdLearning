@@ -403,3 +403,21 @@ $\tau$:arbitrary time lag;
 $<\dots>$ : average over all $t^{,}$ s
 
 
+### Half-Life of Mean Reversion
+
+统计上的显著性实际上要求比较严格，一般来说，要求至少90%的显著性；而在实际应用中，哪怕显著性更低些，也不意味着我们的策略不能盈利。上面式子中的$\lambda$参数还有另一种解释，即，it's a measure of how long ti taks for a price to mean revert.
+
+我们把本章最开始的那个线性模型取差分形式并用无穷小来逼近，即可得到以下形式(Ornstein-Uhlenbeck formula)：
+
+$$
+dy(t) = (\lambda y(t-1) + \mu)dt +d\epsilon 
+$$
+
+$d\epsilon$ : 高斯分布的噪声。
+
+巴拉巴拉，使用差分形式重写方程的好处在于其可以给出$y(t)$的期望值的一个解析解。
+
+$$
+E(y(t)) = y_0 exp(\lambda t) - \mu / \lambda (1-exp(\lambda t))
+$$
+
