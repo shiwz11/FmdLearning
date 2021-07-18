@@ -405,6 +405,9 @@ $<\dots>$ : average over all $t^{,}$ s
 
 ### Half-Life of Mean Reversion
 
+
+![**半条命？？**](https://v2fy.com/asset/0i/ChineseBQB/011Dog_%E7%8B%97%F0%9F%90%B6BQB/%E7%8B%9700022-%E6%89%8B%E5%8A%A8%E7%8B%97%E5%A4%B4.gif)
+
 统计上的显著性实际上要求比较严格，一般来说，要求至少90%的显著性；而在实际应用中，哪怕显著性更低些，也不意味着我们的策略不能盈利。上面式子中的$\lambda$参数还有另一种解释，即，it's a measure of how long ti taks for a price to mean revert.
 
 我们把本章最开始的那个线性模型取差分形式并用无穷小来逼近，即可得到以下形式(Ornstein-Uhlenbeck formula)：
@@ -420,4 +423,31 @@ $d\epsilon$ : 高斯分布的噪声。
 $$
 E(y(t)) = y_0 exp(\lambda t) - \mu / \lambda (1-exp(\lambda t))
 $$
+
+在一个均值回归（平稳）过程中，$\lambda$是负的。如果我们发现其为正的，那么就不应当应用均值回归策略。另一点，如果$\lambda$非常接近0那么，half-life将会非常的长，那么，在给定的时间里，我们将不能完成足够的交易轮次，这就意味着，该策略赚不了钱。
+
+**Example: 2.4 计算均值回归策略中的Half Life**
+
+> 所以这是半条命还是半衰期。。。
+
+![](https://v2fy.com/asset/0i/ChineseBQB/043Altman_%E5%A5%A5%E7%89%B9%E6%9B%BCBQB/%E5%A5%A5%E7%89%B9%E6%9B%BC00285-%E5%B0%8F%E5%B0%8F%E7%9A%84%E5%87%B9%E5%87%B8%E6%9B%BC%E8%84%91%E8%A2%8B%E8%A3%85%E6%BB%A1%E4%BA%86%E5%A4%A7%E5%A4%A7%E7%9A%84%E7%96%91%E6%83%91.jpg)
+
+之前的例子中，我们认识到USD.CAD在90%的显著性水平上是一个不平稳的序列，但这并不意味着我们不能对该序列使用均值回归策略。因为均值回归策略其实对数据的要求并没有那么高。我们在此计算出其Half Life of mean reversion 来决定其是否合适应用均值回归策略。
+
+**因变量**：$y(t) - y(t-1)$;
+
+**自变量**: $y(t-1)$。
+
+跑个OLS回归。相应命令在`jplv7`包中，MATLAB的统计工具箱中的`regress`也可以实现。
+
+```{matlab}
+ylag = lag(y,1); % lag is a function in the jplv7
+deltaY = y - ylag;
+deltaY(1) = []; %Regression functions cannot handle the NaN in the first bar of the time series
+ylag(1) = [];
+regress_result = ols(deltaY, [ylag ones(size(ylag))]);
+halflife=-log(2)/regress_results.beta(1);
+```
+
+### 一个线性的均值回归策略
 
