@@ -451,3 +451,796 @@ halflife=-log(2)/regress_results.beta(1);
 
 ### 一个线性的均值回归策略
 
+# Chapter 3 均值回归策略实操
+
+实操中，我们并不需要真正严格的平稳关系或者协整关系，如果我们挖掘的足够深， 我们就能够发现季节性的或者短期的均值回归特性（季节性均值回归特性意味着 我们的数据只在特定的时间段或者特定的条件下才会呈现出均值回归特性）。而且， 并不是所有的平稳序列都会产生较大的利润，至少当其均值回归的Half-Life过长的时候 该策略不会有什么好收益。
+
+在本章，我们呈现一个虽然简单但却实用的策略：Bollinger Bnads。我们呈现了其 特性以及在估计Hedge Ratio and Mean Price的估计中，卡尔曼滤波的使用。
+
+## Trading Pairs Using Price Spreads , Log Price Spreads, or Ratios
+
+在第二章，我们使用单位资产篮子的价格作为我们的交易信号，该价格为原始价格的一个加权平均。其权重来自于一个线性回归或者Johansen检验之中，其公式如下：
+
+$$
+y = h_1 y_1 + h_2 y_2 + \dots + h_n y_n  \quad (3.1)
+$$
+
+$$
+y = y_1 - h y_2 \quad （3.2）
+$$
+
+有些时候，我们会发现，价格的线性组合依然是不平稳的，其log值可能是平稳的，如下：
+
+$$
+log(q) = h_1 log(y_1) + h_2 log(y_2) + \dots + h_n log(y_n) \quad (3.3)
+$$
+
+其中h依然是来自于某个神秘的回归或者Johansen检验的特征向量。对于（3.3）我们该怎么解释呢，我们对于上式取一阶时间上的差分：
+
+$$
+\Delta log(q) = h_1 \Delta log(y_1) + h_2 \Delta log(y_2) + \dots h_n \Delta log(y_n) \quad (3.4)
+$$
+
+其中：
+
+$$
+\Delta log(x) \equiv log(x(t)) - log(x(t-1)) = log(x(t)/x(t-1)) 
+$$
+
+当x的变化较小的时候，上式约等于$\Delta x /x$.
+
+在式(3.4)中，我们可以把h的值设置为各资产的价格，So, we can set the market value of each asset to h, so, we can interpret q as the market value of a protfolio of assets with price $y_1, y_2, \dots y_n$ and with constant capital weights $h_1, h_2, \dots h_n$
+
+当我们的资产组合中的价格序列并没有协整关系的时候，使用比率($y_1 / y_2$ )有着天然的优势。比如说，价格$A=10$价格B=100,当其价格都分别上涨10倍的时候我们发现其比率是不变的，而当我们使用绝对量的时候哦就可能得出结论：该序列是不平稳的。
+
+换句话说，如果你的两个资产标的的价格并存在协整关系，但是你相信在某一段时间里，该两个序列依然存在均值回归关系，那么你就可以尝试使用比率，或许其效果会比使用绝对量和log值更好。
+
+还有另外一种情形最好使用比值，we often need to use a dynamicallly changig hedge ratio to construct the spread.But we can dispense with this trouble if we use the ratio as a signal in this sitration.但是需要注意的是，价格比例并不总是比绝对值利差和log值利差表现更好，需要具体情况具体判断。
+
+有些市场，比如货币市场，是有现成的比率数据的（应该就是汇率），但是另外一些市场并没有提供现成的比率数据，即使如此，在这类市场上，比率方法依然值得一试。
+
+**Example .1: Trading Price Spread, Log Price Spread, and Ratio**:
+
+前面的例子2.5和2.8中，我们对ETFs GLD and USO演示了均值回归策略，此处，我们将此策略分别应用到price spread, log price spread and ratio上来对比其效果。
+
+一些投资者相信以下逻辑：当石油价格上升的时候，会推升通货膨胀，因而导致金价的上涨。但是实际上，对石油价格和金价进行检验，发现两者并不存在协整关系。我们在此探究，他们两者之间是否存在稳定的短期关系以至于使得均值回归策略有利可图。
+
+1.  首先，我们使用price spread来作为我们的交易信号
+
+在这种情况下，我们需要定期重新计算出对冲比率using a short look-back period in order to adapt the changing levels of the ETFs.
+
+我们使用OLS回归或者Johansen检验的特征向量来得出我们的对冲比率。假设GLD的价格为一个$T\times1$的array x;USO的价格序列形状相同为y。请记住，我们常说的"spread"等于$USO=hedgeRatio*GLD$等于单位资产组合的价格（程序中使用yport代表）。
+
+```{matlab}
+% lookback period for calculating the dynamically changing 
+% hedge ratiod
+
+lookback=20;
+hedgeRatio=NaN(size(x, 1), 1);
+for t=lookback:size(hedgeRatio, 1)
+  regression_result=ols(y(t-lookback+1:t),  ...
+    [x(t-lookback+1:t) ones(lookback, 1)]);
+  hedgeRatio(t) = regression_result.beta(1);
+end
+
+y2 = [x,y];
+yport=sum([-hedgeRatio ones(size(hedgeRatio))].*y2, 2);
+```
+
+将该序列画图发现，其至少看起来是平稳的。我们现在来探究，能否实现一个盈利的举止回归策略。
+
+其中，the $T\times 2$ positions array represents the market value (in dolllars) for each of the constituent ETFs we should be invested in.
+
+```{matlab}
+numUnits = -(spread-movingAvg(spread, lookback)) ...
+  ./movingStd(spread, lookback);
+positions=repmat(numUnits, [1 size(y2, 2)]).*[hedgeRation ...
+  -ones(size(hedgeRatio))].*y2; pn1 = sum(lag(positions, ...
+  1).*(y2-lag(y2, 1))./lag(y2, 1), 2); % daily P and L of the strategy
+  
+ret = pn1 ./ sum(abs(lag(positionis, 1)), 2); % return is P and L
+% divided by gross market value of portfolio
+```
+
+虽然GLD和USO无论如何也是不协整的，但是我们在此策略中实现了10.9%的年化收益和0.59的夏普比率。
+
+2.  现在尝试log price
+
+源码存放在LogPriceSpread.m中，其中与PriceSpread.m不同的两行如下：
+
+```{matlab}
+regression_result = ols(log(y(t-lookback+1:t)), ...
+  [log(x(t-lookback+1:t)) ones(lookback, 1)]);
+  
+% the other line
+
+yport = sum([-hedgeRatio ones(size(hedgeRatio))].*log(y2), ...
+  2);
+% the net market value of the portfolio is the same as the "spread"
+```
+
+使用log price 实现了9%的年化收益和0.5的夏普比率。明显不如price spread 的效果。
+
+3.  Ratio as the signal
+
+该部分的源码在`Ratio.m`中，通过图3.2可以看到，该数据极端不平稳，其年化收益为负值。
+
+```{matlab}
+lookback = 20; % lookback is set arbitrarily
+ratio = y./x;
+ratio(1:lookback)=[]; % Removed to have same test seet as
+% price spread and log price spread stratigies
+x(1:lookback)=[];
+y(1:lookback)=[];
+
+% Apply a simple linear mean reversion strategy to GLD-USO
+numUnits = -(ratio-movingAvg(ratio, lookback)) ...
+  ./movingStd(ratio, lookback); positions = repmat(numUnits, ...
+  [1 2]).*[-ones(size(x, 1), 1) ones(size(x, 1), 1)];
+  pn1=sum(log(positions, 1).*([x y] - lag([x y], 1)). ...
+  /lag([x y], 1), 2); ret=pn1 ./ sum(abs(lag(positions,1)), 2);
+```
+
+## 布林线（带）(BOLL 指标)
+
+目前展示的均值回归策略只是**线性策略**：simply scale the number of units invested in a stationary unit portfolio to be proportional to the deviation of the market value (price) of the unit portfolio from a moving average.该策略不需要任何参数因此，也绝对不会出现过拟合的情况。该方法虽然能够判断对于一个给定的资产组合均值回归策略能否盈利，但是却并不能实际应用。因为我们事先并不知道资产篮子有多大。
+
+此时，就轮到布林线登场了。我们可以等到价格偏离均值的水平超过其entryZscore标准差的时候再入场。 entryZscore是特定训练集的一个自由参数，均值和标准差指的是指定某一长度的回溯期之后计算的出的。回溯期长度也是一个需要优化的参数，或者可以被简单的设定为mean reversion 的 Half-life.
+
+We can exit when the price mean-reverts to exitZscore standard deviations from the means, where $exitZscore < entryZscore$。若$exitZsocre=0$，这意味着当价格回归到均值的时候我们再退场。if $exitZsocre=-entryZsocre$, we will exit when the price moves beyond the opposite band so as to trigger a trading signal of the opposit sign.
+
+**Example 3.2**:我们依然使用Paire GLD-USO we discussed above
+
+此处，我么设定$entryZscore = 1$， $exitZscore = 0$，源码位于`bollinger.m`中。entry Signal data `longsEntry` and `shortsEntry` 是$T \times 1$的`bool`类型变量。
+
+`numUnitsLong`: $T\times 1$ 的array，对于其中的某一元素，若我们收到一个进入信号，则元素值为1，若收到退出信号，则为0。某天未产生信号，则使用前一天的值来填补Na。
+
+```{matlab}
+% Bollinger band strategy
+entryZscore=1;
+exitZscore=0;
+
+zScore=(yport-movingAvg(yport, lookback)) ./movingStd(yport, lookback);
+longsEntry=zSCORE < -entryZscore;
+% a long position means we should buy EWC
+longsExit=zScore >= -exitZscore;
+
+shortsEntry=zScore > entryZscore;
+shortsExit=zSCORE <= exitZscore;
+
+numUnitsLong=NaN(length(yport), 1);
+numUnitsShort=NaN(length(yport), 1);
+
+numUnitsLong(1) = 0;
+numUnitsShort(longsEntry) = 1;
+numUnitsLong(longsExit) = 0;
+numUnitsLong=fillMissingData(numUnitsLong);
+
+numUnitrsShort(1) = 0;
+numUnitsShort(shortsEntry)=-1;
+numUnitsShort(shortsExit)=0;
+numUnitsShort=fillMissingData(numUnitsShort);
+
+numUnits = numUnitsLong + numUnitsShort;
+```
+
+Bollinger Band策略年化有17.8，夏普比率0.96。
+
+## Does Scaling-in Work?
+
+Sccaling-in or averaging-in, 当某资产价格偏离其均值越来越远的时候，其获利的可能性越大。在这种情况下，我们有动机增加该资产的配置盘。即使，该资产的价格不是真正平稳的，其价格也不会真的回归到均值，我们依然能够使用均值回归策略来谋利。
+
+(Schoenberg and Corwin, 2010) proved that entering or exiting at two or more Bollinger bands is never optimal; that is, you can always find a single extry/exit level that will generate a higher average return in a backtest.
+
+假设某期货合约近期跌到了价格$L_1$，其有p的概率继续下跌到$L_2$，然后回复到价格F； 有$1-p$的概率回升到一个最终价格F。假设我们手上的资金仅够我们投两手。
+
+1.  在价格为$L_1$的时候 all-in。
+
+2.  在价格为$L_2$的时候 all-in。（若价格达不到$L_2$，则我们啥也不投）
+
+3.  average-in,价格达到$L_1$的时候我们投一手，价格达到$L2$的时候，我们投一手。
+
+当价格达到F的时候我们exit all （不是average out）。三种情况下的期望收益为：
+
+1.  $2(1-p)(F-L_1)$;
+
+2.  $2p(F-L_2)$
+
+3.  $p[(F-L_1)+(F-L_2)] + (1-p)(F-L_1) = (F-L_1) +p(F-L_2)$
+
+我们令$\hat{p} = (F-L_1)/(F-L_2)$，若$p < \hat{p}$则方法1更赚钱，反之方法二。但是现实生活中p永远不会是一个确定的常数，而且，虽然方法三并不是最赚钱的，但是在现实中其却可能有最好的样本外表现。
+
+## Kalman Filter as Dynamic Linear Regression
+
+现实中，很少有数据是平稳的，那么我们怎么估计其对冲比率呢。(Montana, Triantafyllopoulos, and Tsagaris, 2009)。
+
+卡尔曼滤波是一个线性算法，其根据近期观测到的值来更新某些隐藏变量的值。其假设观测变量是隐藏变量的一个线性函数，同时，隐藏变量在t时刻的值是其$t-1$时刻的值的函数。默认假设噪声服从高斯分布。当我们假设数据噪音服从高斯分布的时候，卡尔曼滤波方法不失为估计参数的一个很好的方法。
+
+For every application of Kalman Filtering, we need to first figure out what these variables and matrices are:
+
+-   Obervable variable (vec)
+
+-   Hidden variable (vec)
+
+-   Stat transition model (mat)
+
+-   Observation model (mat)
+
+$$
+y(t) = x(t) \beta (t) + \epsilon(t) \quad (Measurement\ equation) \quad (3.5)
+$$
+
+$y$:价格序列；
+
+$x$: 另一资产的价格序列；
+
+$\beta$: 隐藏变量------对冲比率，$2\times 1$的向量，包含slope and intercept；
+
+$\epsilon$ : 方差为$V_{\epsilon}$的高斯分布的噪声。
+
+接下来，我们假设$\beta$在t时刻的值等于其在$t-1$时刻的值加上一个噪声：
+
+$$
+\beta(t) = \beta (t-1) + w(t-1), \quad (State transition) \quad (3.6)
+$$
+
+$w$ : 方差为$V_{w}$的高斯噪声。
+
+使用卡尔曼滤波我们不仅能够获得两资产之间动态的对冲比率，还能获得利差的"移动平均值"。其另一个副产品就是能够产生对观测值预测的标准差的估计，which we can use in place of the moving standard deviation of a Bollinger band.
+
+我们不必关心其数学推导关系，了解其性质，用就完了。
+
+**Example 3.3: Kalman Filter Mean Reversion Strategy**
+
+使用前面例子2.7中的EWA-EWC资产组合数据来演示卡尔曼滤波的实现过程。
+
+```{matlab}
+% Augment x with ones to accommodate possible offset in the regression between y vs x
+x = [x ones(size(x))];
+
+delta=0.0001;
+% delta=0 allows no change (like traditional linear regression)
+yhat=NaN(size(y));  % measurement prediction
+e=NaN(size(y));  % measurement prediction error
+Q=NaN(size(y));  % measurement prediction error variance
+
+% FOr clarity, we denote R(t|t) by P(t).
+% initialize P and beta.
+P=zers(2);
+beta=NaN(2, size(x, 1));
+Vw=delta/(1-delta)*diag(ones(2, 1));
+Ve=0.01;
+
+% Initialize beta(:, 1) to zero
+beta(:, 1)=0;
+for t=1:length(y)
+  if (t>1)
+    beta(:, t)=beta(:.t-1);  % state prediction.
+      % Equation 3.7
+  end
+  
+  yhat(t) = x(t, :)*beta(:, t);  % measurement prediction.
+    % Equation 3.9
+  Q(t) = x(t, :)*R*x(t, :)' + Ve;  %measurement variance
+    % prediction. Equatioin 3.10
+  
+  % Observer y(t)
+  e(t) = y(t) - yhat(t);  % measurement prediction error
+  
+  K=R*x(t, :)' / Q(t);  % Kalman gain
+  
+  beta(:, t) = beta(:, t) + K*e(t);  % State update
+    % Equation 3.11
+  P=R-K*x(t, :)*R;   % State covariance update. Equation 3.12
+  
+End
+```
+
+
+![FIGURE 3.5 Kalman FIlter Estimate of the Slope between EWC(y) and EWA(x)](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-3-5.png)
+
+![Kalman Filter Estimate of the Intercept between EWC(y) and EWA(x) ](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-3-6.png)
+
+我们可以使用从卡尔曼滤波中计算得来的结果构造策略。The measurement prediction $e(t)$ (previouls called the forecast error for $y(t)$ given observation at $t-1$) is none other than the deviation of the spread EWC-EWA from its pridicted mean value, and we will buy this spread whe the deviation is very negative, and vice versa is it is very positive.
+
+我们将$e(t)$和$\sqrt{Q(t)}$画图(Figure 3.7)，发现，在$\delta$很小的时候，$\sqrt{Q(t)}$变化也很慢。
+
+```{matlab}
+# The matlab code for determining the entry and exit signals follows
+y2=[x(:, 1) y]
+longsEntry=e < -sqrt(Q);  % a long position means we should buy EWCC
+longsExit=e > -sqrt(Q);
+
+shortsEntry=e > sqrt (Q);
+shortsExit=e < sqrt(Q);
+```
+
+![Figure 3.7 Measurement Prediction Error e(t) and Standard Deviation of e(t)](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-3-7.png)
+
+该策略可实现26.2%的年化，夏普比率2.4。其cumulative returns 在Figure 3.8.
+
+![Figure 3.8 Cumulative Retures of Kalman Filter Strategy on EWA-EWC](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-3-8.png)
+
+## Kalman Filter as Market-Making Model
+
+这里我们展示另一个使用卡尔曼滤波的均值回归过程。在此例子中，我们只关心其中一个价格序列，对于两个协整序列之间的对冲比率，我们并不关心。和以前一样的是，我们依然需要找到价格序列的均值和标准差。
+
+The measurement equation in this case is trivial:
+
+$$
+y(t) = m(t) +\epsilon (t) \quad (Measurement equation) \quad (3.14)
+$$
+
+transition equaiton:
+
+$$
+m(t) = m(t-1) +  w(t-1) \quad (State transition) \quad (3.15)
+$$
+
+state update equation:
+
+$$
+m(t|t) = m(t|t-1)K(t)(y(t)-m(t|t-1)) \quad (State update) \quad (3.16)
+$$
+
+variance of the forecast error:
+
+$$
+Q(t) = Var(m(t)) + V_{e} \quad (3.17)
+$$
+
+Kalman gain:
+
+$$
+K(t) = R(t|t-1)/(R(t|t-1) +V_{e}) \quad  (3.18)
+$$
+
+state variance update:
+
+$$
+R(t|t) = (1-K(t))R(t|t-1) \quad (3.19)
+$$
+
+We denote the trade size as $T$ and the benchmark trade size as $T_{max}$, then $V_e$ can have the form:
+
+$$
+V_e = R(t|t-1)[\frac{T}{T_{max}} - 1]
+$$
+
+若$T=T_{max}$，则我们观测到的价格序列里就不存在不确定性了，此时，Kalman gain就是1，同时，价格均值的估计$m(t)$恰好等于观测值。
+
+## The Danger of Data Error
+
+额。。。平生最恨data error。Thomas Falkenberry (2002) has written more on data cleaning issues.
+
+## 总结
+
+**Some Key Points**:
+
+- Do you want to construct a mean-reverting portfolio with a fixed number of shares during the duration of a trade? Use price series to determine the hedge ratios.
+
+- Do you want to construct a mean-reverting portfolio with fixed market values for each constituent during the duration of a trade? Use log price series to determine the hedge ratios.
+
+- Ratio, instead of spreads, is often a good indicator for trading currency pairs.
+
+- afraid that the hedge ratio, mean and standard deviation of a spread may vary in the future? Use a moving look-back period or the Kalman Filter.
+
+- A practical implementation of a linear trading strategy is the Bollinger bands with scaling-in.
+
+- Scaling-in may not be optimal in backtests but is often useful for live trading where volatilities and probabilities do change.
+
+- Do you want to dynamically update the expected price of an instrument based on its latested trade (price and size)? Use the Kalman Filter.
+
+- Data errors can inflate the backtest result of mean-reverting strategits but not momentum strategies.
+
+- Strategies based on spreads are particularly sensitive to small data errors, whether in backtest or live trading.
+
+# Chapter 4 Mean Reversion of Stocks and ETFs
+
+理论上来说，股票市场上的众多股票受相同的经济因素的影响，因此应该可以找到不少存在协整关系的股票。但，这也只是理论上，现实的应用存在诸多困难。
+
+在通常情况下，大多数股票会呈现出均值回归的特性，但是长期来看，很多股票价格都呈现出几何随机游走的特性。在本章，我们将会构建策略来探究“季节性”或者短期的均值回归特性。
+
+Little profit is left using the traditional implementation of index arbitrage, we gave an example of a modified strategy.
+
+在时间序列的均值回归中，其一般都会回归到由其历史数据决定的均值上，而在cross-sectional mean reversion 中，the cumulative return of the instruments in a basket will revert to the cumulative return of the basket。需要注意的一点是，此处提及的回测收益结果并不包含手续费，因为交易手续费根据选择的股票的不同，交易方法的不同而不同。
+
+## The Difficulties of Trading Stock Pairs
+
+Pair Trading 是最初的机构投资者们使用的交易算法，到现在已经被用烂无利可图了。单只股票一般都是不平稳的，即使使用数只股票来获得协整关系，你依然难以保证其样本外的稳定性。风水轮流转，股票市场上的风水转的很快，而且两家公司即使处于相同行业，其表现也一般不同。除非，你对每一只股票都深入了解，并总能在其大跌之前脱手，一般很难在同一个股票篮子使用均值回归策略获利。
+
+除却上述基本的问题之外，还有两个技术上的难题：
+
+1. Short-scale constraint.
+
+short squeeze
+
+若你的做空策略的篮子中存在难以融到的券，那即使你的策略可以赚钱，你依然可能因借不到券而在最不合适的时机和最不合适的价格被强制平仓导致巨亏。同时还要注意交易规则对卖空的限制。
+
+2. Second difficulty arises in the intraday trading of stock pairs.
+
+主要就是该策略被用烂了，获利空间小，日内平仓的话，基本获取不到收益。
+
+为什么在过去pair trading就能够获利呢，主要是因为那时候市场更加的缺乏效率，而现在，满世界的代码在跑着，想用通常的算法来获利，难了。当然，这些说的都是美国市场，在中国的市场上其效果还不一定。
+
+
+## Trading ETF Pairs (and Triplets)
+
+开放型指数基金
+
+和股票组合不同的是，ETF组合之间一旦出现协整关系，就会比较稳定。这是因为一揽子股票组合其对应的经济基础相比于单只股票的基本面更加稳定。
+
+Another  favorite ETF pairing of mine is between a commodity ETF and an ETF of companies that produce that commodity. For example gold fund GLD versus the gold miners fund GDX. 其逻辑在于，金矿公司的产品是黄金，其公司市值必然和黄金现价存在协整关系。
+
+然而奇怪的是，其协整关系仅仅维持在July 14， 2008，之后，其协整关系就丢失了。这一天发生了什么，在这一天，原油价格达到145美元每桶，到达了一个顶峰，导致金矿公司的成本剧增，其利润下降，公司股价下跌，和黄金价格的协整关系丢失。
+
+若我们将原油基金USO也加入到我们的篮里，将其和GLD、GDX一起研究，就会发现，July 14， 2008之后直到2012年，三者均存在协整关系。
+
+People will think the oil fund USO versus the energy sector fund XLE is another example of a commodity versus commodity producer pair but actually, it is different from the Gold.
+
+
+## Intraday Mean Reversion: Buy-on-Gap model
+
+我们的目标是找到日内平仓交易的均值回归特性。
+
+The rule of the strategy are:
+
+1. Select all stocks near the market open whose reurns from their previous day's lows to today's opens are lower than one standard deviation. The standard deviation is computed using the daily close-to-close returns of the last 90 days. These are the stocks that **gappedn down**.
+
+2. Narrow down this lsit of stocks by requiring their open prices to be higher than the 20-day moving average of the closing prices.
+
+3. Buy the 10 stocks within this list that have the lowest returns from their previous day's lows. If the list has fewer than 10 stocks, then buy the entire list.
+
+4. Liquidate all positions at the market close. 
+
+
+其内在逻辑在于某天stock index futures are down before the open, 某些股票由于恐慌性的抛售会被低估，但当恐慌情绪结束的时候，股价会慢慢回升。
+
+规则2这么写是因为，那些跌得太多的股票往往是因为基本面恶化，其有很大的概率涨不回来。
+
+
+**Example 4.1: Buy-on-Gap Mode on SPX stocks**
+
+$op$ : daily open price ($T \times N$);
+
+$lo$ : daily lows ($T \times N$);
+
+$cl$ : daily closes ($T \times N$);
+
+$N$ :  number of stocks in the  universe;
+
+$T$ : number of days.
+
+该部分的代码保存在`bog.m`中
+
+```{matlab}
+topN = 10; % max number of positions
+entryZscore = 1;
+lookback = 20;  % for moving average
+
+stdretC2C90d = backshift(1, smartMovingStd(calulateReturns(cl, 1), 90));
+buyPrice = backshift(1, lo).*(1-entryZscore*stdretC2C90d);
+
+retGap = op-backshift(1, lo) ./ backshift(1, lo);
+pn1 = zeros(length(tday), 1);
+positionTable=zeros(size(cl));
+
+ma = backshift(1, smartMovingAvg(cl, lookback));
+
+for t=2:size(cl, 1)
+  hasData = find(isfinite(retGap(t, :)) & op(t, :) < buyPrice(t, :) & op(t,:) > ma(t,:));
+
+  [foo idxSort] = sort(retGap(t, hasData), 'ascend');
+  positionTable(t, hasData(idxSort(1:min(topN, length(idxSort)))))=1;
+end
+
+ret02C = (cl-op)./op;
+pn1 = smartsum(positionTable.*(retO2C), 2);
+ret = pn1/topN;
+ret(isnan(ret)) = 0;
+```
+
+使用2006.5.11到2012.5.24的数据进行回测，该策略可实现8.7%的APR， 夏普比率1.5。其cumulative returns curve 见Figure 4.1。
+
+![FIGURE 4.1 Cumulative Returns of Buy-on-Gap Model](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-4-1.png)
+
+同样的，我们可以使用同样的原理来进行做空，
+
+![FIGURE 4.2  Cumulative Returns of Short-on-Gap Model](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-4-2.png)
+
+该策略有多种变种，比如，可以同时进行多空操作，可以进行对冲操作，也可以同时在多个板块进行操作。总之，一句话，没有协整关系的价格序列可能在某特定时间段展现出周期性或阶段性的协整关系。
+
+## Arbitrage between an ETF and Its Component Stocks
+
+ETF和其构成股票之间的套利。
+
+If the stocks are weighted in the same way used to construct the index, then the market value of the portfolio will cointegrate very tightly with the index futures.然而还是老问题，该策略太老套了，现在恐怕已经少有套利空间了。
+
+在我们的例子中，我们选取20070101到20071231一年时间，第一步，使用Johansen检验（显著性90%），找到所有和SPY存在协整关系的股票；第二部，给予所有股票相同的权重配置成一个资产篮子；第三步，对该资产篮子和SPY再次进行Johansen检验（虽然每只股票均和SPY协整，但是整个篮子却未必）。We are using the log price on the second test, because we expect to rebalance the portfolio every day so that the capital on each sotck is constant. 若在第二次检验中确认了协整关系，那么我们结下来就对资产篮子实施线性均值回归策略。
+
+**Example 4.2: Arbitrage between SPY and Its Compontent Stocks**
+
+该部分的代码保存在`indexArb.m`中。stocks和etf部分的数据保存在两个struct中，其内容和上例中的参数相同。
+
+```{matlab}
+trainDataIdx = find(tday >= 20070101 & tday <= 20071231);
+testDataidx = find(tday > 20071231)
+
+isCoint = false(size(stks.stocks));
+for s=1:length(stks.stocks)
+  % combine the two time series into a matrix y2 for
+  % input into Johansen test
+  y2 = [stks.cl(trainDataIdx, s), etf.cl(trainDataIdx)];
+  badData = any(isnan(y2), 2);
+  y2(badData, :) = [];  % remove missing data
+  
+  if (size(y2, 1) > 250)
+    results = johansen(y2, 0, 1);  % johansen test
+      % with non-zero offset but zero drift, and the lag k=1
+    if (results.lr1(1) > results.cvt(1, 1))
+      isCoint(s) = true;
+    end
+  end
+end 
+
+length(find(isCoint))
+
+% 该例子中找到了98只股票和SPY协整
+% 接下来进行上述第二次协整检验
+```
+
+
+```{matlab}
+yN = stks.cl(trainDataIdx, isCoint);
+logMktVal_long = sum(log(yN), 2);  % the net market value of the long-only portfolio is 
+    % the same as the "spread"
+
+% test if the protfolio cointegrates with SPY
+ytest = [logMktVal_long, log(etf.cl(trainDataIdx))];
+results = =johansen(ytest, 0, 1);  % johansen test with non-zero
+    % offset but zero drift, and with the lag k=1.
+prt(results);
+```
+
+![第二次协整检验结果](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-4.1.png)
+
+例子中检验结果显示，资产组合和SPY在95%的显著性水平上存在协整关系。Next, we use the Johansen eigenvector to determine the weights of SPY versus that of the stock portfolio.
+
+There are infact two cointegrating relations, but we will pick the one with the **largest eigenvalue**——the first columns of the eigenmatrix——to form this stationary portfolio.
+
+因为我们使用的是价格的log值，那么，这里的对冲比率代表的就是dollar capital allocation, not number of shares.
+
+接下来对该组合使用线性均值回归策略。
+
+```{matlab}
+yNplus  = [stks.cl(testDataidx, isCoint), etf.cl(testDataidx)];
+% array of stock and ETF price
+weights = [repmat(results.evec(1, 1), size(stks.cl(testDataidx, isCoint))), 
+           repmat(results.evec(2, 1), size(etf.cl(testDataidx)))];
+          % capital allocation among the stocks and SPY.
+
+logMktVal = smartsum(weights.*log(yNplus), 2);
+% log market value of log-short portfolio
+lookback = 5;
+numUnits=-(logMktVal-movingAvg(logMktVal, lookback))./movingStd(logMktVal, lookback);
+positions = repmat(numUnits, [1, size(weights, 2)]).*weights;
+pn1 = smartsum(lag(positions, 1).*(log(yNplus)-lag(log(yNplus), 1)), 2);
+ret=pn1./smartsum(abs(lag(position, 1)), 2);
+ret(isnan(ret)) = 0;
+
+```
+
+该策略的ARP是4.5%，夏普比率1.3。见Figure 4.3。收益并不高，the reason lies in the fact that, we have not retrained the model perioodically to select new constituent stocks with new hedge ratios.
+
+![Culmulative Returns of Arbitrage betweenn SPY and its Component Stocks](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-4-3.png)
+
+
+## Cross-Sectional Mean Reversion: A Linear Long-Short Model
+
+For many portfolio stock-trading strategies, the eduge comes precisely from the indelligent daily selection or reweghting of stocks.
+
+一般来说，所谓的"Cross-sectional" 均值回归策略多用于股票而不是期货或者货币市场，在该策略中，股票价格并不一定真的要回归到其历史价格水平上来。Rather, the fous is on their short-term relative returns, and we rely on  the serial anti-correlation of these relative returns to generate profits.In most cases, the relative returns are compted as a stock's return minus the average returns of all the stocks in a particular universe.So we expect the underperformance of a stock to be followed by overperformance, and vice versa.
+
+We invest in every stock from some favoriate index such as  S and P 500, S and P 1500, or Russell 2000, but with different capital allocation per stock ($w_i$).
+
+$$
+w_i = -(r_i - <r_j>) / \sum_k |r_k - <r_j>|  \qquad (4.1)
+$$
+
+$_i$ : the daily return of the $i^{th}$ stock;
+
+$<r_j>$: the average daily return of all the stocks in the index;
+
+**Example 4.3: Linear Long-Short Model on stocks**
+
+源码在`andrewlo_2007_2013.m`中
+
+```{matlab}
+ret=(cl-lag(cl, 1)) ./ lag(cl, 1);  % daily returns
+
+marketRet = smartmean(ret, 2);  % equal weighted market index return
+
+weights = -(ret-repmat(marketRet, [1 size(ret, 2)]));
+weights = weights ./ repmat(smartsum(abs(weights), 2) [1 size(weights, 2)]);
+dailyret=smartsmu(backshift(1, weights) .* ret, 2);  % capital is always one
+```
+
+该策略可实现13.7%的APR，夏普比率1.3。
+
+
+![Figure 4.4 Cumulative Returns of linear Long-Short Model](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-4-4.png)
+
+
+看似该模型收益不高，但是其贵在“线性”，无参。更可贵的是，在雷曼兄弟倒闭的2008年，该策略的APR为30%，在充满了对美国联邦债务的焦虑以及希腊债务危机影响的2011年，其实现了11%的APR。
+
+一个增强其收益的方法： using the return from the previous close to today's open to determine the weights for entry at the open.然后，进行日内平仓，该策略也就变成了一个日内交易策略。
+
+**Example 4.4: Intraday Linear Long-Short Mode on Stocks**
+
+```{matlab}
+ret = (op-backshift(1, cl))./backshift(1, cl);  % daily returns
+marketRet = smartmean(ret, 2); % equal weighted market index returns
+weights = -(ret-repmat(marketRet, [1 size(ret, 2)]));
+weights = weights .repmat(smartsum(abs(weights), 2), [1 size(weights, 2)]);
+dailyret = smartsum(weights .* (cl-op)./op, 2) ./ smartsum(abs(weights), 2);
+```
+
+增加了该buff之后，同时期的APR就变成了73%，夏普比率4.7。但是这也导致了另外的弊端：
+
+1. 交易费用加倍，因为现在我们一天要交易两次。
+
+2. Since this strategy have to use the "open" prices to determine the trading signals for entry at the open, it is subject to the same trading signal noise that mentioned in the Buy-on-Gap Model in example 4.1.
+
+上面两个例子中我们用到的指标是"relative-returns"， 但是我们有更好的指标，比如，广受欢迎的P/E指标(price-earnings ratio 市盈率).
+
+
+## 总结
+
+- Are you tempted to trade pairs of stocks because of the enormous number of choices? Beware of changes in companies' fundamentals that can render out-of sample performance quite poor despite stellar backtest results.
+
+- Trading a portfolio of cointegrating ETFs can be better than pair-trading stocks.
+
+- Are you pair trading ETFs that hold futures? Beware of the role of roll returns (展期收益) in determining total reutrns of futures.
+
+- Seasonal of intraday mean reversion is hard to detet with usual stationarity or cointegration tests, but can be **very profitable**.
+
+- Imposing momentum filter on mean-reversal strategies typically improves their consistency.
+
+- Do you think that index arbitrage between stocks and futures is no longer profitable? Try a subset of the stocks in the index.
+
+- Cross-sectional mean reversion strategies can be implemented very easily with a linear long-short strategy.
+
+- The variable used fo ranking stocks in a cross-sectional mean reversion strategy is typically relative return, but it can be other fundamental factors such as P/E ratio.
+
+# Mean Reversion of Currencies and Futures
+
+Currencies and futures are the domain of momentum traders.Opportunities for mean reversion strategies in currencies and futures are **limited, but not nonexistent**.
+
+## Trading Currency Cross-Rates
+
+The basic idea in forming a stationary portfolio of foreign currencies is that we need to find countries that have similar economic fundamentals.
+
+Trading currency pairs has a number of advantages compared to trading their corresponding stock index ETF pairs.1.货币市场流动性更高，这也意味着更低的交易费用；2.货币市场可用的杠杆更高，且货币市场没有做空限制（真的假的？）；3.货币市场可全天候交易，这意味着我们有更多的机会。
+
+货币市场的交易机制和基金市场相当不同。先介绍一些术语。If we are trading the cross-rate AUD.ZAR, AUD is called the base currency (基准货币), ZAR is called the quote currency (计价货币)。
+
+In Example 5.1, we focus on trading two currencies that can ultimately be reduced to a pair with a common quote currency $USD: B_1. USD - B_2. USD$.So the reuturns of a portfolio with $n_1$  units of $B_1. USD$ and $n_2$ units of $B_2.USD$ is:
+
+$$
+r(t+1) = \frac{n_1 y_{1,U}(t) r_1(t+1) + n_2 y_{2,U}(t)r_2 (t+1)}{|n_1|y_{1,U}(t)+ |n_2 y_{2,U}(t)|} \qquad (5.1)
+$$
+
+$r_i$ : the return of $B_i. USD$:
+
+$$
+r_i(t+1) = (y_{i,U}(t+1)-y_{i,U}(t))/y_{i,U}(t) \qquad (5.2)
+$$
+
+$y_{i,U}(t)$ : the quotes for $B_{i}.USD$ at t.
+
+
+If a portfolio has $n_{1}^{\prime}$ units of $USD. Q_1$ and $n_{2}^{\prime}$ units of $USD.Q_2$ instead, then the return can be written more simply as:
+
+$$
+r(t+1) = \frac{n_{1}^{\prime} r_1 (t+1) + n_{2}^{\prime} r_2 (t+1)}{|n_{1}^{\prime}|+|n_{2}^{\prime}|} \qquad (5.3)
+$$
+
+$$
+r_i(t+1) = (y_{U,i}(t+1) - y_{U,i}(t)) / y_{U,i}(t) \qquad (5.4)
+$$
+
+$y_{U,i}(t)$ : quotes for $USD.Q_i$ at t.
+
+式子 5.2 和5.4没有考虑展期利息。
+
+**Example 5.1:Pair Trading USD.AUD versus USD.CAD Using the Johansen Eigenvector**
+
+The example here is quite similar to the one in Example 3.1, but here we use a fixed training set of 250 days to compute the hedge ratio, but still we will use a look-back of 20 days to compute the moving average and the standard deviation.
+
+$usdcad, usdaud$: $T\times 1$ array;
+
+$yport$: $T \times 1$the market value of a unit portfolio;
+
+$positions$: $T \times 1$, the market values in USD of AUD.USD and CAD.USD that we should own.
+
+The source code is in `AUDCAD_unequal.m`
+
+```{matlab}
+cad = ./ usdcad.cl;
+aud = audusd.cl;
+
+y = [aud cad];
+trainlen = 250;
+lookback = 20;
+hedgeRatio = NaN(size(y));
+numUnits = NaN(size(y, 1), 1);
+for t=trainlen+1:size(y, 1)
+  res=johansen(log(y(t-trainlen:t-1, :)), 0, 1);
+  hedgeRatio(t, :) = res.evec(:, 1)';
+  yport = sum(y(t-lookback+1:t, :).* repmat(hedgeRatio(t, :), [lookback 1]), 2);
+  ma = mean(yport);
+  mstd = std(yport);
+  zScore=(yport(end)-ma) / mstd;
+  numUnits(t)=-(yport(end)-ma)/mstd;
+end
+
+positions = repmat(numUnits, [1 size(y, 2)]).*hedgeRatio .* y;
+pnl = sum(lag(positions, 1).*(y-lag(y, 1))./lag(y, 1), 2);
+ret = pnl./sum(abs(lag(positions, 1)), 2);
+```
+
+
+![Cumulative Returns of USD.AUD versus USD.CAD Strategy](figs/ATWSR-5-1.png)
+
+The daily return of tow pairs of entirely different cross-rates portfolio $B_1 .Q_1$ versus $B_2. Q_2$ is given in equation 5.1:
+
+$$
+r_i(t+1) = \{log(y_{i, Q_i}(t+1)) - log(y_{i, Q_i}(t)) \}
+$$
+
+$y_{i, Q_i}(t)$ : quote for $B_i . Q_i$;
+
+## Rollover Interests in Currency Trading
+
+A feature of trading currency cross-rate is the differential interest rate earned or paid if the cross-rate position is held overnight.
+
+If we are long a pair B.Q overnight, the interest differential is $i_B-i_Q$, where $i_B$ and $i_Q$ are the daily interest rates of currency B and Q, respectively.
+
+When we calculate the Sharpe ratio for any strategy, we need to calculate the excess return, cause the  Sharp ratio is the ratio of the average excess return devided by the standard deviation of the excess returns, suitably annualized.The excess return is the return of the positions that the strategy holds minus the financing cost of those positions. So if we only have intraday positions, the financing cost is zero.
+
+The excess return $r_{t+1}$ from holding a cross-rate position $POS_{B.Q}$ from day t to day $t+1$ is
+
+$$
+r(t+1) = \{log(y_{B.Q}(t+1)) - log(y_{B.Q}(t)) +log(1+i_B(t)) - log(1+i_Q(t)) \} \quad (5.6)
+$$
+
+$y(t)$ : quote for BQ at t.
+
+**Example 5.2:Pair Trading AUD.CAD with Rollover Interests**
+
+$dailyCl$: $T\times 1$, daily closing prices of AUD.CAD;
+
+$tday$: $T\times 1$, corresponding trading dates.
+
+The source code can be downloaded as `AUDCAD_daily.m`
+
+```{matlab}
+lookback=20;
+# Triple rollover interest on Wednesday for AUD
+isWednesday = weekday(datenum(num2str(tday), 'yyyymmdd')) == 4;
+aud_dailyRates(isWednesday)=3*aud_dailyRates(isWednesday);
+
+cad_dailyRates = zeros(size(tday));
+# Triple rollover interest on Thursday for CAD
+isThursday = weekday(datenum(num2str(tday), 'yyyymmdd')) == 5;
+cad_dailyRates(isThursday)=3*cad_dailyRates(isThursday);
+
+ma=movingAvg(dailyCl, lookback);;
+z=(dailyCl - ma);
+
+ret = lag(-sign(z), 1).*(log(dailyCl) - 
+                           lag(log(dailyCl) + log(1+aud_dailyRates) - 
+                                 log(1+cad_dailyRates), 1));
+```
+
+
