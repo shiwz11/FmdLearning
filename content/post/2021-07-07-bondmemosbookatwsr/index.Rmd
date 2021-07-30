@@ -1190,7 +1190,7 @@ ret = pnl./sum(abs(lag(positions, 1)), 2);
 ```
 
 
-![Cumulative Returns of USD.AUD versus USD.CAD Strategy](figs/ATWSR-5-1.png)
+![Cumulative Returns of USD.AUD versus USD.CAD Strategy](https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-5-1.png)
 
 The daily return of tow pairs of entirely different cross-rates portfolio $B_1 .Q_1$ versus $B_2. Q_2$ is given in equation 5.1:
 
@@ -1321,4 +1321,168 @@ for t=1:length(tday)
     gamma(t) = -12*res.beta(1);
   end
 end
+```
+
+### Do Calendar Spreads Mean-Revert?
+
+**Example 5.4 : Mean Reversion Trading of Clendar Spreads**
+
+As discussed above, the log market value of calendar spread portfolio with a long fra contract and a short near contract is simply $\gamma (T_1 - T_2)$, with $T_2 > T_1$. Hopefully, we can use mean-reverting $\gamma$ to generate trading signals.
+
+```{matlab}
+isGoddData = find(isfinite(gamma));
+gammalag = lag(gamma(isGoddData), 1);
+deltaGamma = gamma(isGoodData)  - gammalag;
+deltaGamma(1) = [];
+gammalag(1) = [];
+regress_results = ols(deltaGamma, [gammalag ones(size(gammalag))]);
+halflife = -log(2) / regress_results.beta(1);
+
+lookback = round(halflife);
+ma = movingAvg(gamma, lookback);
+mstd = movingStd(gamma, lookback);
+zScore = (gamma - ma) ./ matd;
+```
+
+Next, we need to pick a pair of contracts, far and near, on each historical day, based on three criteria:
+
+1.The holding period for a pair of contracts is 3months (two time of the half-life);
+
+2.Roll forward to the next pair of contracts 10 days before the current near contract's expiration;
+
+3.The expiration dates of the near and far contracts are 1 year apart.
+
+```{matlab}
+isExpirData  = false(size(cl));
+positions = zeros(size(cl));
+isExpirData = isfinite(cl) & ~isfinite(fwdshift(1, cl));
+holddays = 3*21;
+numDaysStart = holddays + 10;
+numDaysEnd = 10;
+spreadMonth = 12; % No. months between far and near contracts.
+for c=1:length(contracts) - spreadMOnth
+  expireIdx = find(isExpireData(:, c));
+  expireIdx = expireIdx(end); % THere may be some missing data earlier on
+  if (c == 1)
+    startIdx = max(1, expireIdx - numDaysStart);
+    endIdx = expireIdx - numDaysEnd;
+  else % ensure next front month contract doesn't start unitl current one ends
+    myStartIdx = endIdx + 1;
+    myEndIdx = expireIdx - numDaysEnd;
+    if (myEndIdx - myStartIdx >= holddays)
+      startIdx = myStartIdx;
+      endIdx = myEndIdx;
+    else
+      startIdx = NaN;
+    end
+  end
+
+  if (~isempty(expireIdx) & endIdx > startIdx)
+    positions(startIdx:endIdx, c) = -1;
+    positions(startIdx:endIdx, c+spreadMonth) = 1;
+  end
+end
+```
+
+Finally, apply the linear mean reversion strategy to determine the true positons and calculate the unlevered daily reutrns of the portfolio.
+
+```{matlab}
+positions(isnan(zScore), :) = 0;
+positions(zScore > 0, :) = -positions(zScore > 0, :);
+ret = smartsum(lag(positions) .* (cl-lag(cl, 1)) ./lag(cl, 1), 2) / 2;
+ret(isnan(ret)) = 0;
+```
+
+## Future Intermarket Spreads
+
+The most obvious candidate for pair trading futures is intermarket spreads between markets that are closely related.
+
+### Volatility Futures versus Equity Index Futures
+
+## Key Points
+
+- commodity currencies as a group offer many opportunities for cointegration.
+
+- in computing the returns of a portfolio with two currency cross-rates, did you pay attention to whether they have the same quote currency, the same base currency, or neither? THe formulae for computing reutrns are not the same for all cases.
+
+- Futures returns consist of two components:spot returns and roll reutrns.
+
+- Cause of roll returns, mean reversion of the spot price may not induce mean reversion of the futures price.
+
+- Mean reversion of futures calendar spreads of traded assets depends on mean reversion of roll returns.
+
+# 跨日的动量策略
+
+There are four main causes of momentum:
+
+1. For futures, the persistence of roll returns, especially of their signs;
+
+2. The slow diffusion, analysis, and acceptance of new information;
+
+3. The forced sales or purchases of assets of various type of funds;
+
+4. Market manipulation by high-frequency trades.
+
+## Test for Time Series Momentum
+
+Time series momentum of a price series means that past reutrns are positively correlated with furure returns.We should find the optimal pair of past and future periods that gices the highest positive correlation and use that as our look-back and holding period for our momentum strategy.
+
+**Finding Correlations between Returns of Different Time Frames** to determine the best time frame and the holding days.
+
+```{matlab}
+% correlation tests
+for  lookback = [1 5 10 25 60 120 250]
+  for holddays = [1 5 10 25 60 120 250]
+    ret_lag = (cl - backshift(lookback, cl)) ./ backshift(lookback, cl);
+    ret_fut = (fwdshift(holddays, cl) - cl)./cl;
+    badDates = any([isnan(ret_lag) isnan(ret_fut)], 2);
+    ret_lag(badDates)=[];
+    ret_fut(badDates)=[];
+
+    if (lookback >= holddays)
+      indepSet = [1:lookback:length(ret_lag)];
+    else
+      indepSet = [1:holddays:length(ret_lag)];
+    end
+
+    ret_lag = ret_lag(indepSet);
+    ret_fut = ret_fut(indepSet);
+
+    [cc, pval] = corrcoef(ret_lag, ret_fut);
+    fprintf(1, 'lookback=%3i holddays=%3i cc=%7.4f pval=%6.4f\n', lookback, holddays, cc(1, 2), pval(1, 2));
+  end
+end
+```
+
+## Tiem Series Strategies
+
+From the result of the above program, we pick the best look-back and holding period of 250-20 days to perform a simple momentum strategy: buy (sell) the future if it has a positive (negative) 12-month return, and hold the position for one month.We make a trading decision everyday, and invest only one twenty-fifth of the total capital once.
+
+**Example 6.1 TU Momentum Strategy**
+
+Original codes contained in `TU_mom.m`
+
+```{matlab}
+lookback = 250;
+holddays = 25;
+
+longs = cl > bachshift(lookback, cl);
+shorts = cl < backshift(lookback, cl);
+
+pos = zeros(length(cl), 1);
+
+for h=0:holddays-1
+  long_lag = backshift(h, longs);
+  log_lag(isnan(log_lag)) = false;
+  log_lag = logical(long_lag);
+
+  short_lag = backshift(h, shorts);
+  short_lag(isnan(short_lag)) = false;
+  short_lag=logical(short_lag);
+
+  pos(long_lag) = pos(long_lag) + 1;
+  pos(short_lag) = pos(short_lag) + 1;
+end
+
+ret = (backshift(1, pos).*(cl-lag(cl))./lag(cl)) / holddays; 
 ```
