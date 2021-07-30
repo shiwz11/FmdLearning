@@ -1243,4 +1243,82 @@ ret = lag(-sign(z), 1).*(log(dailyCl) -
                                  log(1+cad_dailyRates), 1));
 ```
 
+![](https://v2fy.com/asset/0i/ChineseBQB/035TomAndJerry_%E7%8C%AB%E5%92%8C%E8%80%81%E9%BC%A0BQB/%E7%8C%AB%E5%92%8C%E8%80%81%E9%BC%A000010-%E7%94%9F%E6%97%A0%E5%8F%AF%E6%81%8B.jpg)
 
+
+## Trading Futures Calendar Spread
+
+### 展期收益，现货升水和期货升水
+
+If the contract are in backwardation, meaning the enar contracts have higher prices than the far contracts, then the roll returns will be positive.
+
+$$
+F(t,T) = S(t) exp(\gamma (t-T)) \quad (5.7)
+$$
+
+$t$: The current time;
+
+$T$: The expiration time;
+
+$S(t)$: The spot price;
+
+$\gamma$:roll reutrn;
+
+$\alpha$: spot return.
+
+
+$$
+S(t) = c e^{\alpha t} \quad (5.8)
+$$
+
+$$
+F(t, T) = ce^{\alpha t} exp(\gamma(t - T)) \quad (5.9)
+$$
+
+$$
+\partial (logF(t, T)) / \partial = \alpha + \gamma \quad (5.10)
+$$
+
+$$
+-\partial (log(F(t, T))) / \partial T = \gamma \quad (5.11)
+$$
+
+Cause of the presence of roll return, the ETF of commodity prodocers may not cointegrates with the spot price of the price of that commodity, be ware of that.
+
+**Example 5.3: Estimating Spot and Roll Returns Using the Constant Reutrns Model**
+
+Program can be downloaded as `estimateFUturesReturns.m`
+
+$\tau$ : number of trading days;
+
+$M$ : number of trading days;
+
+First find the average annualized spot return with a simple regression below:
+
+```{matlab}
+T = [1:length(spot)]';
+T(isBadData) = [];
+res = ols(log(spot), [T ones(size(T, 1), 1)]);
+
+fprintf(1, `Average annualized spot return=%f\n`, 252*smartmean(res.beta(1)))
+```
+
+Next, fit the forward curve (the future price as a function of maturity date) in order ot obtain the values for the roll return $\gamma$. 
+
+```{matlab}
+# The value of gamma is stored in a tau x 1a array gamma
+
+gamma = NaN(size(tday));
+for t=1:length(tday)
+  FT=cl(t, :)';
+  idx=find(isfinite(FT));
+  idxDiff=fwdshift(1, idx)-idx; % ensure consecutive month futures
+  if (length(idx) >= 5 && all(idxDiff(1:4) == 1))
+    FT=FT(idx(1:5));
+    T=[1:length(FT)]';
+
+    res=ols(log(FT), [T ones(size(T, 1), 1)]);
+    gamma(t) = -12*res.beta(1);
+  end
+end
+```

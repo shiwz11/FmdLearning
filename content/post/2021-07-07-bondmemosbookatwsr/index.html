@@ -975,5 +975,60 @@ z=(dailyCl - ma);
 ret = lag(-sign(z), 1).*(log(dailyCl) - 
                            lag(log(dailyCl) + log(1+aud_dailyRates) - 
                                  log(1+cad_dailyRates), 1));</code></pre>
+<p><img src="https://v2fy.com/asset/0i/ChineseBQB/035TomAndJerry_%E7%8C%AB%E5%92%8C%E8%80%81%E9%BC%A0BQB/%E7%8C%AB%E5%92%8C%E8%80%81%E9%BC%A000010-%E7%94%9F%E6%97%A0%E5%8F%AF%E6%81%8B.jpg" /></p>
+</div>
+<div id="trading-futures-calendar-spread" class="section level2">
+<h2>Trading Futures Calendar Spread</h2>
+<div id="展期收益现货升水和期货升水" class="section level3">
+<h3>展期收益，现货升水和期货升水</h3>
+<p>If the contract are in backwardation, meaning the enar contracts have higher prices than the far contracts, then the roll returns will be positive.</p>
+<p><span class="math display">\[
+F(t,T) = S(t) exp(\gamma (t-T)) \quad (5.7)
+\]</span></p>
+<p><span class="math inline">\(t\)</span>: The current time;</p>
+<p><span class="math inline">\(T\)</span>: The expiration time;</p>
+<p><span class="math inline">\(S(t)\)</span>: The spot price;</p>
+<p><span class="math inline">\(\gamma\)</span>:roll reutrn;</p>
+<p><span class="math inline">\(\alpha\)</span>: spot return.</p>
+<p><span class="math display">\[
+S(t) = c e^{\alpha t} \quad (5.8)
+\]</span></p>
+<p><span class="math display">\[
+F(t, T) = ce^{\alpha t} exp(\gamma(t - T)) \quad (5.9)
+\]</span></p>
+<p><span class="math display">\[
+\partial (logF(t, T)) / \partial = \alpha + \gamma \quad (5.10)
+\]</span></p>
+<p><span class="math display">\[
+-\partial (log(F(t, T))) / \partial T = \gamma \quad (5.11)
+\]</span></p>
+<p>Cause of the presence of roll return, the ETF of commodity prodocers may not cointegrates with the spot price of the price of that commodity, be ware of that.</p>
+<p><strong>Example 5.3: Estimating Spot and Roll Returns Using the Constant Reutrns Model</strong></p>
+<p>Program can be downloaded as <code>estimateFUturesReturns.m</code></p>
+<p><span class="math inline">\(\tau\)</span> : number of trading days;</p>
+<p><span class="math inline">\(M\)</span> : number of trading days;</p>
+<p>First find the average annualized spot return with a simple regression below:</p>
+<pre class="matlab"><code>T = [1:length(spot)]&#39;;
+T(isBadData) = [];
+res = ols(log(spot), [T ones(size(T, 1), 1)]);
+
+fprintf(1, `Average annualized spot return=%f\n`, 252*smartmean(res.beta(1)))</code></pre>
+<p>Next, fit the forward curve (the future price as a function of maturity date) in order ot obtain the values for the roll return <span class="math inline">\(\gamma\)</span>.</p>
+<pre class="matlab"><code># The value of gamma is stored in a tau x 1a array gamma
+
+gamma = NaN(size(tday));
+for t=1:length(tday)
+  FT=cl(t, :)&#39;;
+  idx=find(isfinite(FT));
+  idxDiff=fwdshift(1, idx)-idx; % ensure consecutive month futures
+  if (length(idx) &gt;= 5 &amp;&amp; all(idxDiff(1:4) == 1))
+    FT=FT(idx(1:5));
+    T=[1:length(FT)]&#39;;
+
+    res=ols(log(FT), [T ones(size(T, 1), 1)]);
+    gamma(t) = -12*res.beta(1);
+  end
+end</code></pre>
+</div>
 </div>
 </div>
