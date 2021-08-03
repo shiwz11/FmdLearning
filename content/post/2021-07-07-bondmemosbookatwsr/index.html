@@ -1167,5 +1167,72 @@ for h=0:holddays-1
 end
 
 ret = (backshift(1, pos).*(cl-lag(cl))./lag(cl)) / holddays; </code></pre>
+<p>There is also a classic momentum strategy called the Alexander FIlter which tell us to buy the daily return moves up at least <span class="math inline">\(x\)</span> percent, and then sell and go short if the price movce down at least <span class="math inline">\(x\)</span> percent from a subsequent high (Fama and Blume, 1966).</p>
+</div>
+<div id="extracting-roll-returns-through-future-versus-etf-arbitrage" class="section level2">
+<h2>Extracting Roll Returns through Future versus ETF Arbitrage</h2>
+<p>If futures’ total returns = spot returns + roll returns, then an obvious way to extract roll return is buy the underlying asset and short the futures, if the roll return is negative (i.e., under contango); and vice versa if the roll return is positive (i.e., under backwardation).</p>
+<div id="volatility-futures-versus-equity-index-futures-redux" class="section level3">
+<h3>Volatility Futures versus Equity Index Futures: Redux</h3>
+<p>VX’s roll returns can be as low as -50 percent annualized, at the same time, it is highly anticorrelated with ES, with a correlation coefficient of daily returns reaching -75 percent. Here we will make use of the large roll return mangnitude of VX, the small roll return magnitude of ES, and the anticorrelation of VX and ES to develop a momentum strategy. (Simon and Campasano, 2012):</p>
+<ol style="list-style-type: decimal">
+<li><p>If the price of the front contract of VX is higher than that of VIX by 0.1 point (contango) times the number of trading days untill settlement, short 0.3906 front contracts of VX and short 1 front contract of ES. Hold for one day.</p></li>
+<li><p>If the price of the front contract of VX is lower than that of VIX by 0.1 point (backwardation) times the number of trading days untill settlement, buy 0.3906 froont contracts of VX and buy 1 front contract of ES. Hold for one day.</p></li>
+</ol>
+</div>
+</div>
+<div id="cross-sectional-strategies" class="section level2">
+<h2>Cross-Sectional Strategies</h2>
+<p>The third way to extract the roll returns in gutures: just buy a portfolio of futures in backwardation, and simultaneously short a portfolio of futures in contango.The hope is htat the reutrns of the spot prices cancel each other out (cause we belive commodities’ spot prices are positively correlated with economic growth or some other macroeconomic indices), and left with the favorable roll returns.</p>
+<p>Applying this strategy to US stocks, we cna just buy and hold stocks within the top decile of 12-month lagged returns for a month, and vice versa for the bottom decile.</p>
+<p><strong>Example 6.2: Cross-Sectional Momentum Strategy for Stocks:</strong></p>
+<p>The functions <code>smartsum</code> and <code>backshift</code> are available form <code>http://epchan.com/book2</code>. The code can be downloaded as <code>kentdaniel.m</code></p>
+<pre class="matlab"><code>lookback = 252;
+holddays = 25;
+topN = 50;
+
+ret = (cl - backshift(lookback, cl))./backshift(lookback, cl);
+% daily returns
+longs = false(size(ret));
+shorts = false(size(ret));
+
+positions = zeros(size(ret));
+for t=lookback+1:length(tday)
+  [foo idx]=sort(ret(t, :), &#39;ascend&#39;);
+  nodata = find(isnan(ret(t, :)));
+  idx = setdiff(idx, nodata, &#39;stable&#39;);
+  longs(t, idx(end-topN+1:end))=true;
+  shorts(t, idx(1:topN)) = true;
+end
+
+for h=0:holddays=1
+  long_lag=backshift(h, longs);
+  long_lag(isnan(long_lag))=false;
+  long_lag=logical(long_lag);
+
+  short_lag=backshift(h, shorts);
+  short_lag(isnan(short_lag)) = false;
+  short_lag = logical(short_lag);
+
+  positions(long_lag) = positions(long_lag) + 1;
+  positions(short_lag) = positions(short_lag) - 1;
+end
+
+dailyret = smartsum(backshift(1, positions).*(cl-lag(cl))./lag(cl, 2) / (2*topN) / holddays;
+dailyret(isnan(dailyret)) = 0;</code></pre>
+<div id="news-sentiment-as-a-fundamental-factor" class="section level3">
+<h3>News Sentiment as a Fundamental Factor</h3>
+</div>
+<div id="mutal-funds-asset-fire-sale-and-forced-purchases" class="section level3">
+<h3>Mutal Funds Asset Fire Sale and Forced Purchases</h3>
+</div>
+</div>
+<div id="pros-and-cons-of-momentum-strategies" class="section level2">
+<h2>Pros and Cons of Momentum Strategies</h2>
+<p><strong>Cons</strong>:It is always harder to create profitable momentum strategies, and those that are profitable tend to have lower Sharpe ratios than mean-reversal strategies.</p>
+<p>reason 1:As we can see so far, many established momentum strategies have long look-back and holding periods. So clearly the number of independent trading signals is few and far in between, which leads to a lower Sharpe ratio.</p>
+<p>reason 2: Research by Daniel and Moskowitz on “momentum crashes” indicates that momentum strategies for futures or stocks tend to perform miserable for several years after a financial crissi (Daniel and Moskowitz, 2011).</p>
+<p>reason 3: The duration over which momentum remains in force gets progressively shorter as more traders catch on to it.</p>
+<p><strong>Pros</strong>: 1.ease of risk management;</p>
 </div>
 </div>
