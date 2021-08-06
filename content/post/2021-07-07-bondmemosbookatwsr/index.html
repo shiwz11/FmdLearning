@@ -1373,3 +1373,36 @@ ret=smartsum(positions .* (cl-op)./, 2)/30;</code></pre>
 </ul>
 </div>
 </div>
+<div id="chapter-8-risk-management" class="section level1">
+<h1>Chapter 8 Risk Management</h1>
+<p>Risk Management is driven by “loss aversion”. However, the goal of risk management should be the maximization of long-term equity growth.</p>
+<p>The key concept in risk manageent is the prudent of leverage.</p>
+<div id="optimal-leverage" class="section level2">
+<h2>Optimal Leverage</h2>
+<p>For those who are answerable to no one but themselves, the sole goal of trading is the maximization of net worth over the long term. They need not to pay attentation to drawdowns and volatilities of returns.</p>
+<p>In all cases, we have to make the assumption that the future probability distribution of returns of the market is the same as in the past, which is usually incorrect.Some strategy assume further that the distribution of the return of the strategy itself is the same as in the past. And finally, the most restrictive assumption is that, the probability distribution of the return of the strategy is Gaussian.</p>
+<p>No matter how the optimal leverage is determined, the one central theme is that the leverage should be kept constant.However, this sometimes can be quite counterintuitive, for example, if we have a long stock portfolio, and the profit and loss was positive in the last trading period, the constant leverage requirement forces us to buy more stocks for this period.However, if it is negative, it forces us to sell stocks into the loss.</p>
+<div id="kelly-formula" class="section level3">
+<h3>Kelly Formula</h3>
+<p>Suppose the distribution of returns is Gaussian, the optimal leverage <span class="math inline">\(f\)</span>:</p>
+<p><span class="math display">\[
+f = m / s^2
+\]</span></p>
+<p><span class="math inline">\(m\)</span> : mean excess return;</p>
+<p><span class="math inline">\(s^2\)</span> : variance of the excess returns.</p>
+<p>It can be proved that, if the Gaussian assumption is a good approximation, then the Kelly leverage <span class="math inline">\(f\)</span> will generate the highest compounded growth rate of equity, assuming that all profits are reinvested.</p>
+<p>If the overestiamtion of the optimal leverage is high enough, it will ruin us.So, many traders deploy a leverage equal to half of what the Kelly formula recommends: the so-called half-Kelly leverage.In other words, the Kelly Formula better viewed as the upper bound.</p>
+<p>Another usage of the Kelly formula: it tell us how to optimally allocate our buying power to different portfolos or strategies.</p>
+<p><span class="math display">\[
+F= C^{-1}M
+\]</span></p>
+<p><span class="math inline">\(F\)</span> : column vector of optimal leverages;</p>
+<p><span class="math inline">\(C\)</span>: covariance matrix of the reuturns of the portfolios;</p>
+<p><span class="math inline">\(M\)</span> : mean excess returns of these portfolios.</p>
+<p>If our broker has set a maximum leverage <span class="math inline">\(F_{max}\)</span> that is smaller than the total gross leverage <span class="math inline">\(\sum_{i}^{n} |F_i|\)</span>, we usually multiply all <span class="math inline">\(F_i\)</span> by the factor <span class="math inline">\(F_{max}/\sum_{i}^{n} |F_i|\)</span>, so than the total gross leverage is equal to <span class="math inline">\(F_{max}\)</span>.Another choice is to invest most or all our buying power into the portfolio or strategy with the highest mean excess return.</p>
+</div>
+<div id="optimization-of-expected-growth-rate-using-simulated-returns" class="section level3">
+<h3>Optimization of Expected Growth Rate Using Simulated Returns</h3>
+</div>
+</div>
+</div>
