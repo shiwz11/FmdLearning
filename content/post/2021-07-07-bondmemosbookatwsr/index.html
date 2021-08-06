@@ -1234,5 +1234,142 @@ dailyret(isnan(dailyret)) = 0;</code></pre>
 <p>reason 2: Research by Daniel and Moskowitz on “momentum crashes” indicates that momentum strategies for futures or stocks tend to perform miserable for several years after a financial crissi (Daniel and Moskowitz, 2011).</p>
 <p>reason 3: The duration over which momentum remains in force gets progressively shorter as more traders catch on to it.</p>
 <p><strong>Pros</strong>: 1.ease of risk management;</p>
+<p>For mean-reverting strategies, their upside is limited by their natural profit cap, but their downside can be unlimited.For mometum strategies, their upside is unlimited while their downside is limited.</p>
+<p>The thicker the tails of the returns distribution curve, or the higher its kurtosis, the better that market is for momentum strategies.</p>
+</div>
+<div id="key-points-1" class="section level2">
+<h2>Key Points</h2>
+<ul>
+<li><p>Time-Series momentum refers to the positive correlation of a price series’ past and future returns.</p></li>
+<li><p>Cross-sectional momentum refers to the positive correlation of a price series’ past and futuren relative returns, in relation to that of other price series in a portfolio.</p></li>
+<li><p>Futures exhibit time series momentum mainly because of the persistence of the sign of roll returns.</p></li>
+<li><p>If you are able to find an instrument that cointegrates or correlates with the spot price or return of a commodity, you cna extract the roll return of the commodity future by sorting that instrument during backwardation, or buying that instrument during contango.</p></li>
+<li><p>Portfolios of futures or stocks often exhibit cross-sectional momentum: a simple ranking algorithm based on returns would work.</p></li>
+<li><p>Profitable strategies on news sentiment momentum show that the slow diffusion of news is a cause of stock price momentum.</p></li>
+<li><p>The contagion of forced asses sales and purchases among mutal funds contributes to stock price momentum.</p></li>
+<li><p>Momentum models thrive on “black swan” events and the positive kurtosis of the reutrns distributiond curve.</p></li>
+</ul>
+</div>
+</div>
+<div id="chapter-7-intraday-momentum-strategies" class="section level1">
+<h1>Chapter 7 Intraday Momentum Strategies</h1>
+<p>A long holding periods strateegy present two problems:1.result in lower Sharp Ratios and backtest statistical significance, cause of the infrequent independent trading signals;2.suffer from underperformance in the aftermath of financial crises.</p>
+<div id="opening-gap-strategy" class="section level2">
+<h2>Opening Gap Strategy</h2>
+<p>Buy when the instrument gaps up, and short when it gaps down.</p>
+<p><strong>Example 7.1:Opening Gap Strategy for FSTX</strong></p>
+<p>Dow Jones STOXX 50 index futures (FSTX)</p>
+<p>The utilities function <code>smartMovingStd</code> and <code>backshift</code> are available from <code>epchan.com/book2</code>.</p>
+<pre class="matlab"><code>entryZscore=0.1;
+stdretC2C90d = backshift(1, smartMovingStd(calculateReturns(cl, 1), 90));
+longs = op &gt; backshift(1, hi).*(1+extryZsocre*stdretC2C90d);
+shorts = op &lt; backshift(1, hi).*(1-extryZsocre*stdretC2C90d);
+
+positions = zeros(size(cl));
+
+positions(longs) = 1;
+positions(shorts) = -1;
+ret = positions.*(op-cl)./op;</code></pre>
+</div>
+<div id="news-driven-momentum-strategy" class="section level2">
+<h2>News-Driven Momentum Strategy</h2>
+<div id="post-earnings-announcement-drift" class="section level3">
+<h3>Post-Earnings Announcement Drift</h3>
+<p>Buy the stock if the return is very postitive and short if the return is very negative, and liquidate the position at the same day’s close.</p>
+<p>We can use the function <code>parseEarningsCalendarFromEarningsDotCom</code> displayed in the box to retrieve one year or so of earnings annoucements data from earnings.com.</p>
+<p>The program below carefully selects only earnings announcements occurring after the previous trading day’s market close and before today’s market open.</p>
+<p><strong>Function for Retrieving Earnings Calendar from earnings.com</strong></p>
+<p>The function takes an input <span class="math inline">\(1 \times N\)</span> array and returns a <span class="math inline">\(1 \times N\)</span> bool array earnann, which tells us whether the corresponding stock has an earnings announcements after the pervious day’s 4:00 P.M. ET and before today’s 9:30 A.M.ET.</p>
+<pre class="matlab"><code>function [earnann] = parseEarningsCalendarFromEarningsDotCom(prevData, todayData, allsyms)
+
+  earnann = zeros(size(allsyms));
+  prevEarningsFile = urlread([&#39;http://www.earnings.com/earning.asp?date=&#39;, num2str(prevDate), &#39;&amp;client=cb&#39;]);
+  todayEarningsFile = urlread([&#39;http://www.earnings.com/earning.asp?date=&#39;, num2str(todayDate), &#39;&amp;client=cb&#39;]);
+
+  prevmmm = datestr(datenum(num2str(prevDate), &#39;yyyymmdd&#39;), &#39;mmm&#39;);
+  todaymmm = datestr(datenum(num2str(todayDate), &#39;yyyymmdd&#39;), &#39;mmm&#39;);
+  patternSym = &#39;&lt;a\s+href=&quot;company.asp\?ticker=([%\*\w\._/-]+)&amp;coid&gt;&#39;;
+  patternPrevDateTime=[&#39;&lt;td alig=&quot;center&quot;&gt;&lt;nobr&gt;&#39;, num2str(prevd), &#39;-&#39;, num2str(prevmmm), &#39;([ :\dABPMCO]*)&lt;/nobr&gt;&#39;];
+  symA=regexp(prevEarningsFile, patternSym, &#39;tokens&#39;);
+  timeA=regexp(prevEarningsFile, patternPrevDateTime, &#39;tokens&#39;);
+
+  symsA=[symsA{:}];
+  timeA=[timeA{:}];
+  
+  assert(length(symA)==length(timeA));
+  isAMC=~cellfun(&#39;isempty&#39;, regexp(timeA, &#39;AMC&#39;));
+  patternPM=&#39;[ ]+\d:\d\d[ ]+PM&#39;; % e.g. &#39; 6:00 PM&#39;;
+  isAMC2=~cellfun(&#39;isempty&#39;, regexp(timeA, patternPM));
+  symsA=symsA(isAMC | isAMC2);
+  
+  [foo, idxA, idxALL]=intersect(symsA, allsyms);
+  earnann(idxALL)=1;
+  
+  % today
+  patternTodayDateTime=[&#39;&lt;td align=&quot;center&quot;&gt;&lt;nobr&gt;&#39;, num2str(todayd), &#39;-&#39;, num2str(todaymmm), &#39;([ :\dABPMCO]*)&lt;/nobr&gt;&#39;];
+  symA=regexp(todayEarningsFile, patternSym, &#39;tokens&#39;);
+  timeA=regexp(todayEarningsFile, patternTodayDateTime, &#39;tokens&#39;);
+  
+  symsA=[symA{:}];
+  timeA=[timeA{:}];
+  
+  symsA=symsA(1:length(timeA));
+  
+  assert(length(symsA)==length(timeA));
+  isBMO=~cellfun(&#39;isempty&#39;, regexp(timeA, &#39;BMO&#39;));
+  patternAM=&#39;[ ]+\d:\d\d[ ]+AM&#39;;
+  isBMO2=~cellfun(&#39;isempty&#39;, regexp(timeA, patternAM));
+  symsA=symsA(isBMO | isBMO2);
+  [foo, idxA, idxALL]=intersect(symsA, allsyms);
+  earnann(idxALL)=1;
+  end</code></pre>
+<p>In example 7.2 we calculate the 90-day moving standard deviation of previous-close-to-next day’s-open return as the benchmark for deciding whether the announcement is “surprising” enough to generate the post announcement drift.</p>
+<p><strong>Example 7.2</strong></p>
+<pre class="matlab"><code>lookback=90;
+
+retC20=(op-backshift(1, cl))./backshift(1, cl);
+stdC20=smartMovingStd(retC20, lookback);
+
+positions=zeros(size(cl));
+longs=retC20 &gt;= 0.5*stdC20 &amp; earnann;
+shorts=retC20 &lt;= -0.5*stdC20 &amp; earnann;
+
+positions(lonogs) = 1;
+positions(shorts) = -1;
+
+ret=smartsum(positions .* (cl-op)./, 2)/30;</code></pre>
+<p>With time goes on the duration of momentum is shortened due to increased awareness of the existence of such momentum, so the overnight return of the strategy is negative on average.</p>
+</div>
+<div id="drift-due-to-other-events" class="section level3">
+<h3>Drift Due to Other Events</h3>
+<p>In theory, any announcements that a reevaluation of the fair market value of a compay should induce a change in its share price toward a new equilibrium price (Hafez, 2011). Hafez found that the acquiree’s stock price falls more than the acquirer’s after the initial announcement of the acquisition, which is really weird.</p>
+</div>
+</div>
+<div id="leveraged-etf-strategy" class="section level2">
+<h2>Leveraged ETF Strategy</h2>
+<p>A large change in the market index generates momentum in the same direction for bothe leveraged long or short ETFs. If the change is positive, a short ETF would experience a decrease in equity, and its sponsor would need to reduce its short positions. Therefore, it would also need to buy stocks, just as the long ETF would.</p>
+</div>
+<div id="hight-frequency-strategies" class="section level2">
+<h2>Hight-Frequency Strategies</h2>
+<p>The basic idea is quite simple: if the bid size is much bigger than the ask size, expect the price to tick up and vice versa.</p>
+<p>In markets that fill orders on a pro-rata basis , the simplest way ot benefit from this expectation is just to “join the bid” immediately.为避免损失，we join the bid only when the original bid size is much bigger than the ask size, this is called the ratio trade.</p>
+<p><em>ticking or quote matching</em> : place the buy order at the best bid plus one tick, if this is filled, then we place a sell order at the best ask minus one tick and hope that it is filled. If it is not, we can probably still sell it at the original best bid, with the loss of commissions plus one tick.</p>
+<div class="figure">
+<img src="https://cdn.jsdelivr.net/gh/shiwz11/pics_public@master/FMDPics/ATWSR-7-1.png" alt="" />
+<p class="caption">FIGURE 7.3 ticking or quote matching</p>
+</div>
+<p>High-frequency traders can profit only from slower traders, if only high-frequency traders are left in the market, the net average profit for everyone will be zero.</p>
+<p><em>Stop hunting</em> is another favorite high-frequency momentum strategy.Research in the currencies markets indicated that <strong>once support (resistance) levels are breached, prices will go futher down(up) for a while</strong> (Osler, 2000, 2001).This short-term price momentum occures because of the large number of stop orders placed at or near the support and resistance levels.</p>
+<p>Empricial research indicates that <strong>order flow</strong> information is a good predictor of price movements. Market makes can distill important fundamental information from order flow information, and set the bid-ask prices accordingly.</p>
+</div>
+<div id="key-points-2" class="section level2">
+<h2>Key Points</h2>
+<ul>
+<li><p>Intraday momentum strategies do not suffer from many of the disadvantages of interday momentum strategies, but they retain some key advantages.</p></li>
+<li><p>“Breakout” momentum strategy involve a price exceeding a trading range.</p></li>
+<li><p>The opening gap strategy is a breakout strategy that works for some futures and cueencies.</p></li>
+<li><p>Breakout momentum may be caused by the triggering of stop orders.</p></li>
+<li><p>Order flow can predict short-term price movement in the same direction.</p></li>
+</ul>
 </div>
 </div>
