@@ -1776,9 +1776,63 @@ $C$: covariance matrix of the reuturns of the portfolios;
 
 $M$ : mean excess returns of these portfolios.
 
-If our broker has set a maximum leverage $F_{max}$ that is smaller than the total gross leverage $\sum_{i}^{n} |F_i|$, we usually multiply all $F_i$ by the factor $F_{max}/\sum_{i}^{n} |F_i|$, so than the total gross leverage is equal to $F_{max}$.Another choice is to invest most or all our buying power into the portfolio or strategy with the highest mean excess return.
+If our broker has set a maximum leverage $F_{max}$ that is smaller than the total gross leverage $\sum_{i}^{n} |F_i|$, we usually multiply all $F_i$ by the factor $F_{max}/\sum_{i}^{n} |F_i|$, so than the total gross leverage is equal to $F_{max}$.Another choice is to invest most or all our buying power into the portfolio or strategy with the highest mean excess return.When we have two or more strategies with very differnet independent growth rates, and when we have a maximum leverage constraint that is much lower than the Kelly leverage, it is often optimal to just apply all of our buying power on the strategy that has the highest growth rate.
 
 ### Optimization of Expected Growth Rate Using Simulated Returns
 
+We relax the Gaussian assumption, the expected value of the compounded growth rate as a function of the leverage $f$ is (assuming for simplicity that the risk-free rate is zero):
 
+$$
+g(f) = <log(1+fR)> \qquad (8.5)
+$$
+
+$<\dots>$: average over some random sampling of the unlevered return-per-bar $R(t)$ of the strategy based on some probability distribution of $R$.
+
+Next, we would like to compute Equation 8.5 using a non-Gaussian distribution of R using the Pearson system, which takes as input the mean, standard deviation, skewness, and kurtosis of the empirical distribution of R. Some empirical may have a non-zero higher moments even an infinite higher moments, in this case, we use the Pearson system for our Monte Carlo sampling.
+
+### Optimization of Historical Growth Rate
+
+### Maximum Drawdown
+
+## Constant Proportion Portdolio Insurance
+
+Constant proportion portfolio insurance (CPPI): one method to maximize compounded growth while limiting the maximum drawdown.
+
+It is quite simple, suppose the optimal Kelly leverage of our strategy is determined to be $f$, and the maximum drawdown is $-D$. We simply set aside D of our initial total account equity for trading, and apply a leverage of $f$ to this subaccount, the other $1-D$ of the account will be sitting in cash. If our total account reach a higher water mark we reset our subaccount so that it is again D of the total equity. And of course, even we loss all the money in the subaccount the maximum drawdown wouldn't be higher than $-D$.
+
+**Computing Growth Rate Using CPPI**:
+
+```{matlab}
+# assume the return series is ret_sim
+# the optimal leverage is optimalF
+# maximum drawdown allowed is -D=-0.5
+g_cppi = 0;
+drawdown = 0;
+D = 0.5;
+for t = 1:length(ret_sim)
+  g_cppi = g_cppi+log(1+ret_sim(t)*D*optimalF*(1+drawdown));
+  drawdown=min(0, (1+drawdown)*(1+ret_sim(t))-1);
+end
+g_cppi=g_cppi/length(ret_sim);
+```
+
+## Stop Loss
+
+Stop loss can only prevent the unrealized $P\&L$ from exceeding our self-imposed limit if the market is always open whenever we are holding a position.
+
+
+## Risk Indicators
+
+Leading risk indicators let us predict whether the next period will be risky for our investment.
+
+For example, the TED spread, which is the difference between the three-month London Interbank Offered Rate (LIBOR) and the three-month T-bill interest rate, and it measures the risk of bank defaults.
+
+ETF's ONN and OFF.
+
+
+# Conclusion
+
+Instad of blindly adding more rules, more indicators to the model and hoping that they miraculously improve the model performance, we **should look for a fundamaental reason and then quantitatively test whether this fundamental reason is valid.**
+
+Beware of the regime shift, the fundamental change in the market structure due to government regulatory or macroeconomic changes.
 

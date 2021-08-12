@@ -1399,10 +1399,54 @@ F= C^{-1}M
 <p><span class="math inline">\(F\)</span> : column vector of optimal leverages;</p>
 <p><span class="math inline">\(C\)</span>: covariance matrix of the reuturns of the portfolios;</p>
 <p><span class="math inline">\(M\)</span> : mean excess returns of these portfolios.</p>
-<p>If our broker has set a maximum leverage <span class="math inline">\(F_{max}\)</span> that is smaller than the total gross leverage <span class="math inline">\(\sum_{i}^{n} |F_i|\)</span>, we usually multiply all <span class="math inline">\(F_i\)</span> by the factor <span class="math inline">\(F_{max}/\sum_{i}^{n} |F_i|\)</span>, so than the total gross leverage is equal to <span class="math inline">\(F_{max}\)</span>.Another choice is to invest most or all our buying power into the portfolio or strategy with the highest mean excess return.</p>
+<p>If our broker has set a maximum leverage <span class="math inline">\(F_{max}\)</span> that is smaller than the total gross leverage <span class="math inline">\(\sum_{i}^{n} |F_i|\)</span>, we usually multiply all <span class="math inline">\(F_i\)</span> by the factor <span class="math inline">\(F_{max}/\sum_{i}^{n} |F_i|\)</span>, so than the total gross leverage is equal to <span class="math inline">\(F_{max}\)</span>.Another choice is to invest most or all our buying power into the portfolio or strategy with the highest mean excess return.When we have two or more strategies with very differnet independent growth rates, and when we have a maximum leverage constraint that is much lower than the Kelly leverage, it is often optimal to just apply all of our buying power on the strategy that has the highest growth rate.</p>
 </div>
 <div id="optimization-of-expected-growth-rate-using-simulated-returns" class="section level3">
 <h3>Optimization of Expected Growth Rate Using Simulated Returns</h3>
+<p>We relax the Gaussian assumption, the expected value of the compounded growth rate as a function of the leverage <span class="math inline">\(f\)</span> is (assuming for simplicity that the risk-free rate is zero):</p>
+<p><span class="math display">\[
+g(f) = &lt;log(1+fR)&gt; \qquad (8.5)
+\]</span></p>
+<p><span class="math inline">\(&lt;\dots&gt;\)</span>: average over some random sampling of the unlevered return-per-bar <span class="math inline">\(R(t)\)</span> of the strategy based on some probability distribution of <span class="math inline">\(R\)</span>.</p>
+<p>Next, we would like to compute Equation 8.5 using a non-Gaussian distribution of R using the Pearson system, which takes as input the mean, standard deviation, skewness, and kurtosis of the empirical distribution of R. Some empirical may have a non-zero higher moments even an infinite higher moments, in this case, we use the Pearson system for our Monte Carlo sampling.</p>
+</div>
+<div id="optimization-of-historical-growth-rate" class="section level3">
+<h3>Optimization of Historical Growth Rate</h3>
+</div>
+<div id="maximum-drawdown" class="section level3">
+<h3>Maximum Drawdown</h3>
 </div>
 </div>
+<div id="constant-proportion-portdolio-insurance" class="section level2">
+<h2>Constant Proportion Portdolio Insurance</h2>
+<p>Constant proportion portfolio insurance (CPPI): one method to maximize compounded growth while limiting the maximum drawdown.</p>
+<p>It is quite simple, suppose the optimal Kelly leverage of our strategy is determined to be <span class="math inline">\(f\)</span>, and the maximum drawdown is <span class="math inline">\(-D\)</span>. We simply set aside D of our initial total account equity for trading, and apply a leverage of <span class="math inline">\(f\)</span> to this subaccount, the other <span class="math inline">\(1-D\)</span> of the account will be sitting in cash. If our total account reach a higher water mark we reset our subaccount so that it is again D of the total equity. And of course, even we loss all the money in the subaccount the maximum drawdown wouldn’t be higher than <span class="math inline">\(-D\)</span>.</p>
+<p><strong>Computing Growth Rate Using CPPI</strong>:</p>
+<pre class="matlab"><code># assume the return series is ret_sim
+# the optimal leverage is optimalF
+# maximum drawdown allowed is -D=-0.5
+g_cppi = 0;
+drawdown = 0;
+D = 0.5;
+for t = 1:length(ret_sim)
+  g_cppi = g_cppi+log(1+ret_sim(t)*D*optimalF*(1+drawdown));
+  drawdown=min(0, (1+drawdown)*(1+ret_sim(t))-1);
+end
+g_cppi=g_cppi/length(ret_sim);</code></pre>
+</div>
+<div id="stop-loss" class="section level2">
+<h2>Stop Loss</h2>
+<p>Stop loss can only prevent the unrealized <span class="math inline">\(P\&amp;L\)</span> from exceeding our self-imposed limit if the market is always open whenever we are holding a position.</p>
+</div>
+<div id="risk-indicators" class="section level2">
+<h2>Risk Indicators</h2>
+<p>Leading risk indicators let us predict whether the next period will be risky for our investment.</p>
+<p>For example, the TED spread, which is the difference between the three-month London Interbank Offered Rate (LIBOR) and the three-month T-bill interest rate, and it measures the risk of bank defaults.</p>
+<p>ETF’s ONN and OFF.</p>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>Instad of blindly adding more rules, more indicators to the model and hoping that they miraculously improve the model performance, we <strong>should look for a fundamaental reason and then quantitatively test whether this fundamental reason is valid.</strong></p>
+<p>Beware of the regime shift, the fundamental change in the market structure due to government regulatory or macroeconomic changes.</p>
 </div>
