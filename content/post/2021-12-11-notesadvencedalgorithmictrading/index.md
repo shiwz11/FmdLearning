@@ -215,4 +215,154 @@ plt.show()
 
 # Bayesian Linear Regression
 
+## Frequentist Linear Regression
 
+$$
+f(X) = \beta_0 + \sum_{j=1}^{p} X_j \beta_j + \epsilon = \beta^{T}X + \epsilon
+$$
+
+
+$$
+\begin{aligned}
+\operatorname{RSS}(\beta) &=\sum_{i=1}^{N}\left(y_{i}-f\left(x_{i}\right)\right)^{2} \\
+&=\sum_{i=1}^{N}\left(y_{i}-\beta^{T} x_{i}\right)^{2}
+\end{aligned}
+$$
+
+
+$$
+\hat{\beta} = (X^T X)^{-1}X^Ty
+$$
+
+## Bayesian Linear Regression
+
+Acutually, Bayesian linear regression is stated in a probabilistic manner.
+
+$$
+\mathbf{y} \sim \mathcal{N}\left(\beta^{T} \mathbf{X}, \sigma^{2} \mathbf{I}\right)
+$$
+
+- Prior Distributions: If we have any prior knowledge about the parameters $\beta$ then we can choose prior distributions that reflect this. If not, we choose non-informative priors.
+
+- Posterior Distributions: In the Bayesian formaulatoin, we receive an entire probability distribution that characterises our uncertainty on te different $\beta$ coefficients. Then, we can quantify our uncertainty in $\beta$ via the variance of this posterior distribution.
+
+### GLM
+
+GLMs allow for response variables that have error distributions other than the normal distribution. The linear model is related to the response y via a "link function" and is assumed to be generated via a statistical distribution from the exponential distribution family, which encompasses normal, gamma, beta, chi-squared, Bernoulli, Poisson and others. The mean of this distribution:
+
+$$
+\mathbb{E}(\mathbf{y})=\mu=g^{-1}(\mathbf{X} \beta)
+$$
+
+In which, g is the so-called link function.
+
+Variance:
+
+$$
+Var(y) = V(\mathbb{E}(y)) = V(g^{-1}\mathbf{X}\beta)
+$$
+
+```{python}
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pymc3 as pm
+import seaborn as sns
+
+sns.set(style="darkgrid", palette="muted")
+
+def simulate_linear_data(N, beta_0, beta_1, eps_sigma_sq):
+    """
+    Simulate a random dataset using a noisy
+    linear process.
+
+    :param N: Number of data points to simulate
+    :param beta_0: Intercept
+    :param beta_1: Slope of univariate predictor, X
+    :param eps_sigma_sq:
+    :return:
+    """
+    # Create a pandas DataFrame with column 'x' containing
+    # N uniformly sampled values between 0.0 and 1.0
+    df = pd.DataFrame(
+        {"x":
+         np.random.RandomState(42).choice(
+             map(
+                 lambda x: float(x)/100.0,
+                 np.arange(N)
+             ), N, replace=False
+         )}
+    )
+    # Use a linear model (y ~ beta_0 + beta_1*x + epsilon) to
+    # generate a column 'y' of response based on 'x'
+    eps_mean = 0.0
+    df["y"] = beta_0 + beta_1*df["x"] + np.random.RandomState(42).normal(
+        eps_mean, eps_sigma_sq, N
+    )
+
+    return df
+
+def glm_mcmc_inference(df, iterations=5000):
+    """
+    Calculates the Markov Chain Monte Carlo trace of
+    a Generalised Linear Model Bayesian linear regression
+    model on supplied data.
+
+    :param df: DataFrame containing the data
+    :param iterations: Number of iterations to carry out MCMC for
+    :return:
+    """
+    # Use PyMC3 to construct a model context
+    basic_model = pm.Model()
+    with basic_model:
+        # Create the glm using the Patsy model syntax
+        # We use a Normal distribution for the likelihood
+        pm.glm.glm("y ~ x", df, family=pm.glm.families.Normal())
+
+        # Use Maximum A Posteriori (MAP) optimisation
+        # as initial value for MCMC
+        start = pm.find_MAP()
+
+        # Use the No-U-Turn Sampler
+        step = pm.NUTS()
+
+        # Calculate the trace
+        trace = pm.sample(
+            iterations, step, start,
+            random_seed=42, progressbar=True
+        )
+
+    return trace
+
+if __name__ == "__main__":
+    # These are our "true" parameters
+    beta_0 = 1.0    # Intercept
+    beta_1 = 2.0    # Slope
+
+    # Simulate 100 data points, with a variance of 0.5
+    N = 200
+    eps_sigma_sq = 0.5
+
+    # Simulate the "linear" data using the above parameters
+    df = simulate_linear_data(N, beta_0, beta_1, eps_sigma_sq)
+
+    # Plot the data, and a frequentist linear regression fit
+    # using the seaborn package
+    sns.lmplot(x="x", y="y", data=df, size=10)
+    plt.xlim(0.0, 1.0)
+
+    trace = glm_mcmc_inference(df, iterations=5000)
+    pm.traceplot(trace[500:])
+    plt.show()
+
+    # Plot a sample of posterior regression lines
+    sns.lmplot(x="x", y="y", data=df, size=10, fit_reg=False)
+    plt.xlim(0.0, 1.0)
+    plt.ylim(0.0, 4.0)
+    pm.glm.plot_posterior_predictive(trace, samples=100)
+    x = np.linspace(0, 1, N)
+    y = beta_0 + beta_1*x
+    plt.plot(x, y, label="True Regression Line", lw=3., c="green")
+    plt.legend(loc=0)
+    plt.show()
+```
