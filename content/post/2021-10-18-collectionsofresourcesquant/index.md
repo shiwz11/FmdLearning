@@ -54,4 +54,14 @@ tags:
 
 [Mathematical Finance](http://onlinelibrary.wiley.com/journal/10.1111/%28ISSN%291467-9965)
 
+# Journals
+
+**Finance Top Three**:
+
+Journal of Finance
+
+Journal of Financial Economics
+
+Review of Financial Studies
+
 
