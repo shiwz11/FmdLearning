@@ -366,3 +366,232 @@ if __name__ == "__main__":
     plt.legend(loc=0)
     plt.show()
 ```
+
+# Time Series
+
+> Time series analysis attempts to understand the past and predit the future.
+
+- Trends
+
+- Seasonal Variation
+
+- Series Dependence
+
+## Serial Correlation
+
+## Random Walks and White Noise Models
+
+## ARMA
+
+## ARIMA-GARCH
+
+## Cointegrated Time Series
+
+# State Space Models and the Kalman Filter
+
+Different from the ARIMA model, the parameters of state space models can adapt over time.
+
+The goal of the state space model is to infer information about the states, given the observation, as new information arrives.
+
+There are three types of inference that are of interest when considering state space models:
+
+- Prediction
+
+- Filtering
+
+- Smoothing
+
+## Linear State-Space Model
+
+$\theta_{t}$: column vector of the stats;
+
+$y_t$: observation of the model at time t;
+
+$G_t$: state-transition matrix betweet current and prior states at tiem t and t-1 respectively;
+
+$v_t$: measurement noise;
+
+$w_t$: system noise drawn from a multivariate normal distribution;
+
+$F_{t}^{T}$: linear dependece matrix of $\theta_t$ on $y_t$.
+
+$m_0$: mean value of the multivariate normal distribution of the initial state, $\theta_0$;
+
+$C_0$: variance-covariance matrix of the multivariate normal distribution of the initial state, $\theta_0$; 
+
+$W_t$: the variance-covariance matrix for the multivariate normal distribution from which the system noise is drawn;
+
+$V_t$: variance-covariance matrix for the multivariate normal distribution from which the measurement noise is drawn.
+
+We assume that these states are linear combination of the prior state at time $t-1$ as well as system noise (random variation), which is drawn from a multivariate normal distribution.
+
+**State equation:**
+
+$$
+\theta_t = G_t \theta_{t-1} + w_t
+$$
+
+**Observation equation:**
+
+$$
+y_t = F_{t}^{T} \theta_t + v_t
+$$
+
+
+$$
+\begin{aligned}
+\theta_{0} & \sim \mathcal{N}\left(m_{0}, C_{0}\right) \\
+v_{t} & \sim \mathcal{N}\left(0, V_{t}\right) \\
+w_{t} & \sim \mathcal{N}\left(0, W_{t}\right)
+\end{aligned}
+$$
+
+## Kalman Filter
+
+Apply Bayes' Rule:
+
+$$
+P(\theta_t |D_{t-1},y_t) = \frac{P(y_t|\theta_t)P(\theta_t|D_{t-1})}{P(y_t)}
+$$
+
+Means we can update our view on the state, $\theta_t$, in a rational manner given the fact that we have new information in the form of the current observation $y_t$.
+
+
+**prior**:
+
+$$
+\theta_t | D_{t-1} \sim \mathcal{N}(a_t, R_t)
+$$
+
+**likelihood**:
+
+$$
+y_t | \theta_{t} \sim \mathcal{N}(F_{t}^{T}\theta_t, V_T)
+$$
+
+**posterior**:
+
+$$
+\theta_t|D_{t} \sim \mathcal{N}(m_t, C_t)
+$$
+
+Next, this is how Kalman Filter links all of the terms above together:
+
+$$
+\begin{aligned}
+a_{t} &=G_{t} m_{t-1} \\
+R_{t} &=G_{t} C_{t-1} G_{t}^{T}+W_{t} \\
+e_{t} &=y_{t}-f_{t} \\
+m_{t} &=a_{t}+A_{t} e_{t} \\
+f_{t} &=F_{t}^{T} a_{t} \\
+Q_{t} &=F_{t}^{T} R_{t} F_{t}+V_{t} \\
+A_{t} &=R_{t} F_{t} Q_{t}^{-1} \\
+C_{t} &=R_{t}-A_{t} Q_{t} A_{t}^{T}
+\end{aligned}
+$$
+
+```{python}
+from __future__ import print_function
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as np
+import pandas as pd
+import pandas_datareader as pdr
+from pykalman import KalmanFilter
+
+def draw_date_coloured_scatterplot(etfs, prices):
+    """
+    Create a scatterplot of the two ETF prices, which is
+    coloured by the date of the price to indicate the
+    changing relationship between the sets of prices
+    :param etfs:
+    :param prices:
+    :return:
+    """
+    # Create a yellow-to-red colourmap where yellow indicates
+    # early dates and red indicates latter dates
+    plen = len(prices)
+    colour_map = plt.cm.get_cmap('YlOrRd')
+    colours = np.linspace(0.1, 1, plen)
+
+    # Create the scatterplot object
+    scatterplot = plt.scatter(
+        prices[etfs[0]], prices[etfs[1]],
+        s=30, c=colours, cmap=colour_map,
+        edgecolor='k', alpha=0.8
+    )
+
+    # Add a colour bar for the date colouring and set the
+    # corresponding axis tick labels to equal string-formatted dates
+    colourbar = plt.colorbar(scatterplot)
+    colourbar.ax.set_yticklabels(
+        [str(p.date()) for p in prices[::plen//9].index]
+    )
+    plt.xlabel(prices.columns[0])
+    plt.ylabel(prices.columns[1])
+    plt.show()
+
+def calc_slope_intercept_kalman(etfs, prices):
+    """
+    Utilise the Kalman Filter from the PyKalman package
+    to calculate the slope and intercept of the regressed
+    ETF prices.
+    :param etfs:
+    :param prices:
+    :return:
+    """
+    delta = le-5
+    trans_cov = delta / (1 - delta) * np.eye(2)
+    obs_mat = np.vstack(
+        [prices[etfs[0]], np.ones(prices[etfs[0]].shape)]
+    ).T[:, np.newaxis]
+
+    kf = KalmanFilter(
+        n_dim_obs=1,
+        n_dim_state=2,
+        initial_state_mean=np.zeros(2),
+        initial_state_covariance=np.ones((2,2)),
+        transition_matrices=np.eye(2),
+        observation_matrices=obs_mat,
+        observation_covariance=1.0,
+        transition_covariance=trans_cov
+    )
+
+    state_means, state_covs = kf.filter(prices[etfs[1]].values)
+    return state_means, state_covs
+
+def draw_slope_intercept_changes(prices, state_means):
+    """
+    Plot the slope and intercept changes from the
+    Kalman Filter calculated values.
+    :param prices:
+    :param state_means:
+    :return:
+    """
+    pd.DataFrame(
+        dict(
+            slope=state_means[:, 0],
+            intercept=state_means[:, 1]
+        ), index=prices.index
+    ).plot(subplots=True)
+    plt.show()
+
+if __name__ == "__main__":
+    # Choose the ETF symbols to work along with
+    # start and end dates for the price histories
+    etfs = ['TLT', 'IEI']
+    start_date = "2010-08-01"
+    end_date = "2016-08-01"
+
+    # Obtain the adjusted closing prices from Yahoo finance
+    etf_df1 = pdr.get_data_yahoo(etfs[0], start_date, end_date)
+    etf_df2 = pdr.get_data_yahoo(etfs[1], start_date, end_date)
+    prices = pd.DataFrame(index=etf_df1.index)
+    prices[etfs[0]] = etf_df1["Adj Close"]
+    prices[etfs[1]] = etf_df2["Adj Close"]
+
+    draw_date_coloured_scatterplot(etfs, prices)
+    state_means, state_covs = calc_slope_intercept_kalman(etfs, prices)
+    draw_slope_intercept_changes(prices, state_means)
+```
