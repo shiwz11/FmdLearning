@@ -595,3 +595,16 @@ if __name__ == "__main__":
     state_means, state_covs = calc_slope_intercept_kalman(etfs, prices)
     draw_slope_intercept_changes(prices, state_means)
 ```
+
+# Hidden Markov Models
+
+Used for Market Regime detection.
+
+A stochastic state space model involves random transitions between states where the probability of the jump is only dependent upon the current state, rather than any of the previous states. The model is said to possess the Markov Property and is thus "memoryless".
+
+|            | Fully Observable        | Partially Observable                         |
+| ---------- | ----------------------- | -------------------------------------------- |
+| Autonomous | Markov Chain            | Hidden Markov Model                          |
+| Controlled | Markov Decision Process | Partially Observable Markov Decision Process |
+
+In a HMM, there are underlying latent states-and probability transitions between them, but they are not directly observable.
