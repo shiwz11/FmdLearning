@@ -22,6 +22,8 @@ tags:
 
 [Quantpedia](http://quantpedia.com)
 
+[Systematic Investor's Blog](http://systematicinvestor.github.io/)
+
 # Aggregators 
 
 [Quantocracy](http://www.quantocracy.com)

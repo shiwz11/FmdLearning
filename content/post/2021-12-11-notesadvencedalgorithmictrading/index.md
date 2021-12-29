@@ -608,3 +608,44 @@ A stochastic state space model involves random transitions between states where 
 | Controlled | Markov Decision Process | Partially Observable Markov Decision Process |
 
 In a HMM, there are underlying latent states-and probability transitions between them, but they are not directly observable.
+
+$$
+\begin{aligned}
+p\left(X_{1: T}\right) &=p\left(X_{1}\right) p\left(X_{2} \mid X_{1}\right) p\left(X_{3} \mid X_{2}\right) \ldots \\
+&=p\left(X_{1}\right) \prod_{t=2}^{T} p\left(X_{t} \mid X_{t-1}\right)
+\end{aligned}
+$$
+
+This states that the probability of seeing sequence of observations is given by the probability of the initial observation multiplied $T-1$ tiems by the conditional probability of seeing the subsequent observation (transition function), which it self is time-independent.
+
+To simulate n steps of a DSCM (Discrete-State Markov Chain) model we define the n-step transition matrix $A(n)$ as:
+
+$$
+A_{ij}(n) := p(X_{t+n} = j|X_t=i) 
+$$
+
+For HMM, it is necesary to create a set of discrete states $z_t \in \{1, \dots, K\}$ and to model the observations with an additional probability model, $p(\mathbf{x}_{t}|z_t)$. Which means, the conditional probability of seeing a particular obseration (asset return) given that the state (market regime) is currently equal to $z_t$.
+
+### HMM mathematical specification
+
+Murphy (2012) gives the following joint density function for the HMM.
+
+$$
+\begin{aligned}
+p\left(\mathbf{z}_{1: T} \mid \mathbf{x}_{1: T}\right) &=p\left(\mathbf{z}_{1: T}\right) p\left(\mathbf{x}_{1: T} \mid \mathbf{z}_{1: T}\right) \\
+&=\left[p\left(z_{1}\right) \prod_{t=2}^{T} p\left(z_{t} \mid z_{t-1}\right)\right]\left[\prod_{t=1}^{T} p\left(\mathbf{x}_{t} \mid z_{t}\right)\right]
+\end{aligned}
+$$
+
+The model choice of the obsevation transition function is more complex, which in general, we use a confitional multivariate Gaussiann distribution with mean $\mu_k$ and covariance $\sigma_k$:
+
+$$
+p\left(\mathbf{x}_{t} \mid z_{t}=k, \theta\right)=\mathcal{N}\left(\mathbf{x}_{t} \mid \mu_{k}, \sigma_{k}\right)
+$$
+
+Which means, if the state $z_t$ is currently equal to k, then the probability of seeing observation $x_t$, given the parameters of the model $\theta$, is distributed as a multivariate Gaussian.
+
+## Regime Detection with HMM
+
+Regime detection is actually a form of **unsupervised learning**.
+
