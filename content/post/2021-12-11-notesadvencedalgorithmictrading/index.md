@@ -649,3 +649,40 @@ Which means, if the state $z_t$ is currently equal to k, then the probability of
 
 Regime detection is actually a form of **unsupervised learning**.
 
+
+### Simulated Data
+
+```{r}
+if (!require(depmixS4)) {
+    install.packages('depmixS4')
+    require('depmixS4')
+}
+
+if (!require('quantmod')) {
+    install.packages('quantmode')
+    require('quantmod')
+}
+
+set.seed(1)
+
+# The bull market is distributed as N(0.1,0.1)
+# the bear market is distributed as N(-0.05, 0.2)
+# Create the parameters for the bull and
+# bear market returns distributions
+Nk_lower = 50
+Nk_upper = 150
+bull = mean = 0.1
+bull_var = 0.1
+bear_mean = -0.05
+bear_var = 0.2
+
+# Create the list of durations (in days) for each regime
+days = replicate(5, sample(Nk_lower:Nk_upper, 1))
+
+# Create the various bull and bear markets returns
+market_bull_1 = rnorm(days[1], bull_mean, bull_var)
+market_bear_2 = rnorm(days[2], bear_mean, bear_var)
+market_bull_3 = rnorm(days[3], bull_mean, bull_var)
+market_bear_4 = rnorm(days[4], bear_mean, bear_var)
+market_bull_5 = rnorm(days[5], bull_mean, bull_var)
+```
