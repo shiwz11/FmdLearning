@@ -761,3 +761,23 @@ matplot(post_probs[,-1], type='l',
         ylab='Probability')
 legend(x='bottomleft', c('Regime #1', 'Regime #2', 'Regime #3'), fill=1:3, bty='n')
 ```
+
+# Introduction to Machine Learning
+
+Algorithms frequently used within quantitative finance:
+
+- Linear Regression
+
+- Linear Classification
+
+- Tree-Based Methods
+
+- SVM
+
+- Artificial Neural Networks and Deep Learning
+
+- Bayesian Networks
+
+- Clustering
+
+- Dimensionality Reduction
