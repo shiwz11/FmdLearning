@@ -781,3 +781,32 @@ Algorithms frequently used within quantitative finance:
 - Clustering
 
 - Dimensionality Reduction
+
+# Supervised Learning
+
+## Classification
+
+This problem is formalised as attempting to estimate $p(y=k|\mathbf{x})$, for a particular $k \in \mathbf{K}$.
+
+$$
+\hat{y} = \hat{f}(x) = argmax_{k\in K} p(y=k|x)
+$$
+
+In the Bauesian interpretation this value is known as **Maximum A Posterior (MAP)** estimate.
+
+## Regression
+
+$$
+\hat{y} = \hat{f}(x) = argmax_{z\in \mathbb{R}} p(y=k|x)
+$$
+
+## Training
+
+**Loss Function**: $L(y, \hat{y})$,.
+
+Mean Squared Error (MSE): a common loss model used in regression.
+
+$$
+MSE = \frac{1}{N} \sum_{i=1}^{N} |y_i-\hat{y}_i|^2
+$$
+
