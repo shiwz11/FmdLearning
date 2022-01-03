@@ -973,3 +973,27 @@ There exits only one history, so we pretend that we are the God, and pretend tha
 
 ### The Bootstrap
 
+If B separate bootstrapped samples of the training set are created, with separate model estimator $\hat{f}^{b}(x)$, then averaging these leads to a low variance estimator model:
+
+$$
+\hat{f}_{avg} (x) = \frac{1}{B} \sum_{b=1}^{B} \hat{f}^{b} (x)
+$$
+
+### Random Forests
+
+### Boosting
+
+James et al (2013) and Hastie et al (2009) gave the following basic boosting algorithm:
+
+1. Set the initial estimator to zero, that is $\hat{f}(x)=0$. Also set the residuals to the current responses, $r_i=y_i$, for all elements in the training set.
+
+2. Set the number of boosted trees, B. Loop over $b = 1, \dots, B$:
+
+(a) Grow a tree $\hat{f}^{b}$ with k splits to training data $(x_i, r_i)$, for all i.
+
+(b) Add a scaled version of this tree to the final estimator: $\hat{f}(x)  \leftarrow \hat{f}(x) + \lambda \hat{f}^{b}(x)$
+
+(c) Update the residuals to account for the new model: $r_i \leftarrow r_i - \lambda \hat{f}^{b}(x_i)$
+
+3. Set the final boosted model to be the sum of individual weak learners: $\hat{f}(x) = \sum_{b=1}^{B}\lambda \hat{f}^b (x)$
+
