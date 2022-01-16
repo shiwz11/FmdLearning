@@ -1167,3 +1167,23 @@ If $f(\mathbf{x}^*) > 0$ then $y^* = +1$, else $y^* = -1$.
 
 ## Maximal Margin Hyperplane
 
+## Kernels
+
+Polynomial kernels of degree d:
+
+$$
+K (x_i, x_k) = (1+ \sum_{j=1}^{p}x_{ij}x_{kj})^d
+$$
+
+Radial Kernel
+
+$$
+K(x_i, x_k) = exp\left(-\gamma \sum_{j=1}^{p}(x_{ij} - x_{kj})^2 \right ) , \gamma > 0
+$$
+
+For radial kernel, if test observation is far from a training observation in standard Euclidean distance, then the resutl of kernel will be quite small. Which means, the radial kernel has extremely localised behaviour.
+
+# Model Selection and Cross-Validation
+
+## Bias-Variance Trade-Off
+
