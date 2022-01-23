@@ -1475,3 +1475,30 @@ if __name__ == "__main__":
     )
 
 ```
+
+# Unsupervised Learning
+
+# NLP
+
+Common steps between a text document and an automated trading strategy:
+
+- Automate the download of multiple, continually generated articles from external sources at a potentially high throughput.
+
+- Parse these documents for the relevant section of text/information that require analysis, even if the format differs between documents.
+
+- Convert arbitrarily long passages of text (over many possible languages) into a consistent data structure that can be understood by a classification system.
+
+- Determine a set of groups (or labels) that each document will be a member of. Examples inlcude "positive" and "negative" or "bullish" and "bearish".
+
+- Create a "training corpus" of documents that have known labels associated with them. For instance, a thousand financial articles may need tagging with the "bullish" or "bearish" labels.
+
+- Train the classifiers on the corpus.
+
+- Use the classifiers to label new documents, in an automated, ongoing manner.
+
+- Assess the "classification rate" and other associated performance metrics of the classifier.
+
+- Intergrate the classifier into an automated trading system, either by means of filtering other trading signals or generating new ones.
+
+- Continually monitor the system and adjust it as necessary if its performance begins to degrade.
+
