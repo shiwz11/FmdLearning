@@ -1,0 +1,82 @@
+---
+title: AssetPricingNOTES20220907
+author: shiwz11
+date: '2022-09-07'
+slug: assetpricingnotes20220907
+categories: []
+tags: []
+bibliography: [mybib.bib]
+---
+
+
+
+<div id="实证资产定价from-川总写量化" class="section level1">
+<h1><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIyMDEwNDk1Mg==&amp;action=getalbum&amp;album_id=1515112944307585026&amp;scene=173&amp;from_msgid=2650881906&amp;from_itemidx=1&amp;count=3&amp;nolastread=1#wechat_redirect">实证资产定价（From 川总写量化）</a></h1>
+<div id="收益率预测的贝叶斯收缩" class="section level2">
+<h2><a href="https://mp.weixin.qq.com/s?__biz=MzIyMDEwNDk1Mg==&amp;mid=2650875355&amp;idx=1&amp;sn=9fb5f0912dc9a6bbdab458ad49af1cf8&amp;chksm=8c24944cbb531d5a9f4d7d5b1b9e7f9f4d218a030a26350f9f0402b477dccd18c67dd360b609&amp;scene=178&amp;cur_album_id=1515112944307585026#rd">收益率预测的贝叶斯收缩</a></h2>
+<p>马科维茨的现代资产配置理论虽然简单但是却建立在非常严格的假设之下：即待配置的投资品的<strong>收益率的期望和方差是已知的(即可预测的)！</strong>。这意味着<strong>一旦预测的数据非常离谱，那么资产配置效用的最大化就变成误差的最大化</strong></p>
+<p>Chopra and Ziemba（1993）的研究表明，收益率<strong>期望</strong>的误差对资产配置的影响比收益率方差（以及协方差）的影响高一个数量级。</p>
+<div id="多因子模型和基于历史数据的统计模型" class="section level3">
+<h3>多因子模型和基于历史数据的统计模型</h3>
+<p>多因子模型的核心就是选择一些合适的因子、并把投资品的收益率看成这些因子的线性函数。然后利用线性回归确定因子的参数。这样当因子有了最新的数值后，就可以利用得到的线性方程得到投资品收益率的预测。</p>
+<p>Fama French 三因子模型在CAPM模型的基础上引入<strong>市值</strong>和<strong>市净率</strong>两个因子对投资频的收益率进行建模。</p>
+<p>多因子模型中的有限个因子无法解释投资品收益率面对的所有风险；他们只能解释自身业务对应的风险。因此，多因子模型的预测结果是<strong>有偏的</strong>，是以忽略一部分无法解释的风险为代价的。因此：</p>
+<blockquote>
+<p>多因子模型对收益率期望的预测有一定的预测性以及很强的结构性、但它是有偏的。</p>
+</blockquote>
+</div>
+<div id="基于历史数据的统计模型" class="section level3">
+<h3>基于历史数据的统计模型</h3>
+<p>基于历史的统计模型就是利用投资品的历史数据求出样本均值，并以该均值作为未来收益率均值的预测。</p>
+<p>由于每个投资品的预测只用到自己过去的历史数据，因此这个模型是无结构性的（它相当于每个投资品自成一个因子）。此外，基于历史数据的预测是无偏的（unbiased），它可以反应每个投资品所暴露的所有风险</p>
+<blockquote>
+<p>基于历史数据的统计模型对于收益率期望的预测有如下特点：无偏性、无结构性、低预测性。</p>
+</blockquote>
+</div>
+<div id="贝叶斯收缩" class="section level3">
+<h3>贝叶斯收缩</h3>
+<p>结合两种方法！(Jorion 1986, Harvey et al. 2008)</p>
+<p>贝叶斯收缩以多因子模型得出的收益率作为<strong>先验（prior）</strong>，以实际收益率（历史数据）作为新的观测值（observation），计算出收益率均值的<strong>后验（posterior）</strong>作为最终预测。形象的说，该方法结合了两种方法，以最优的比例使基于历史数据的预测向基于多因子模型的预测“收缩”。这个最优的比例使得预测的期望误差最小。贝叶斯收缩相当于给历史收益率数据提供了多因子模型能提供的额外有效信息，从而得到更加有效的预测。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220906154853.png" /></p>
+<p>此外，这个“收缩”的思路也可以推广到<strong>投资品协方差矩阵</strong>的预测（Ledoit and Wolf 2003）</p>
+<p><span class="citation">(<a href="#ref-Liechty2008" role="doc-biblioref">Liechty, Harvey, and Liechty 2008</a>)</span> found that if the future distribution is just like the past, the Bayes player always wins. However, if there is a change in the distribution, the resampling player (by using a Monte Carlo based method) shows advantages.</p>
+<p><span class="citation">(<a href="#ref-FamaFrench992Cross" role="doc-biblioref">Fama and French 1992</a>)</span>提出了 Fama French 三因子模型。</p>
+</div>
+</div>
+<div id="追逐p-value" class="section level2">
+<h2><a href="https://mp.weixin.qq.com/s?__biz=MzIyMDEwNDk1Mg==&amp;mid=2650877109&amp;idx=1&amp;sn=496736c17eb00756c3ed05cce4154960&amp;chksm=8c249d22bb5314349bc9d1296eda861c153d54ca7db9d2c0335534ef1c7d79b4e10257c9405b&amp;scene=178&amp;cur_album_id=1515112944307585026#rd">追逐P-value</a></h2>
+<div id="what-is-p-values" class="section level3">
+<h3>What is P values</h3>
+<blockquote>
+<p>The null hypothesis is usually a statement of no relation between variables or no effect of an experimental manipulation. The p-value is the probability of observing an outcome or a more extreme outcome if the null hypothesis is true<span class="citation">(<a href="#ref-Fisher1992Statistical" role="doc-biblioref">Fisher 1992</a>)</span>.</p>
+</blockquote>
+<p>P-value 代表着原假设下观测到某（极端）事件的条件概率。即以D代表极端事件，则<span class="math inline">\(p-value=prob(D|H)\)</span>。即，p-value 不代表原假设或者备择假设是否为真实的。</p>
+<blockquote>
+<p>P-value is a statement about data in relation to a specified hypothetical explanation, and is not a statement about the explanation itself.</p>
+</blockquote>
+<p><img src="https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220907101757.png" /></p>
+<p>美国统计协会关于P-value的6个准则<span class="citation">(<a href="#ref-RonaldNicole2016ASA" role="doc-biblioref">Wasserstein and Lazar 2016</a>)</span></p>
+<ol style="list-style-type: decimal">
+<li><p>P-values can indicate how incompatible the data are with a specified stattistical model.</p></li>
+<li><p>P-values do not measure the probability that the studied hypothesis is true, or the probability that the data were produced by random change alone.</p></li>
+</ol>
+</div>
+</div>
+</div>
+<div id="参考文献" class="section level1 unnumbered">
+<h1>参考文献</h1>
+<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-FamaFrench992Cross" class="csl-entry">
+Fama, Eugene F, and Kenneth R French. 1992. <span>“The Cross-Section of Expected Stock Returns.”</span> <em>The Journal of Finance</em> 47 (2): 427–65.
+</div>
+<div id="ref-Fisher1992Statistical" class="csl-entry">
+Fisher, Ronald Aylmer. 1992. <span>“Statistical Methods for Research Workers.”</span> In <em>Breakthroughs in Statistics</em>, 66–70. Springer.
+</div>
+<div id="ref-Liechty2008" class="csl-entry">
+Liechty, John, Campbell Harvey, and Merrill Liechty. 2008. <span>“Bayes Vs. Resampling: A Rematch”</span> 6 (January).
+</div>
+<div id="ref-RonaldNicole2016ASA" class="csl-entry">
+Wasserstein, Ronald L., and Nicole A. Lazar. 2016. <span>“The ASA Statement on p-Values: Context, Process, and Purpose.”</span> <em>The American Statistician</em> 70 (2): 129–33. <a href="https://doi.org/10.1080/00031305.2016.1154108">https://doi.org/10.1080/00031305.2016.1154108</a>.
+</div>
+</div>
+</div>
