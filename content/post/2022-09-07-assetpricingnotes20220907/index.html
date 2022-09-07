@@ -10,6 +10,9 @@ bibliography: [mybib.bib]
 
 
 
+<p>文中内容来源于网络，仅用作个人学习笔记备忘，如有侵权请联系<code>shiwz11@hotmail.com</code>会立即删除！</p>
+<p>如果您偶然间发现这个网页，建议点击对应的超链接去关注原作者，相信这样能有更多收获！！</p>
+<p>祝好！</p>
 <div id="实证资产定价from-川总写量化" class="section level1">
 <h1><a href="https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIyMDEwNDk1Mg==&amp;action=getalbum&amp;album_id=1515112944307585026&amp;scene=173&amp;from_msgid=2650881906&amp;from_itemidx=1&amp;count=3&amp;nolastread=1#wechat_redirect">实证资产定价（From 川总写量化）</a></h1>
 <div id="收益率预测的贝叶斯收缩" class="section level2">
@@ -59,18 +62,55 @@ bibliography: [mybib.bib]
 <ol style="list-style-type: decimal">
 <li><p>P-values can indicate how incompatible the data are with a specified stattistical model.</p></li>
 <li><p>P-values do not measure the probability that the studied hypothesis is true, or the probability that the data were produced by random change alone.</p></li>
+<li><p>Scientific conclusions and business or policy decisions should not be based only on whether a p-value pass a specific threshold.</p></li>
+<li><p>Proper inference requires full reporting and transparency.</p></li>
+<li><p>A p-value, or statistical significance, does not measure the size of an effect or the importance of a result.(统计上的显著未必有重要的经济意义)</p></li>
+<li><p>By itself, a p-value does not provide a good measure of evidence regarding a model or hypothesis.</p></li>
 </ol>
+<p><strong>如果一个效用本身越不可能发生，我们越要小心，因为会有大量的false positive</strong></p>
+<p><span class="math inline">\(\pi\)</span>: 现实中我们找到一个真实因果关系的概率；</p>
+<p><span class="math inline">\(\alpha\)</span>: 原假设为真时的显著性水平；</p>
+<p><span class="math inline">\(\beta\)</span>: 备择假设为真时检验正确的拒绝原假设的概率。</p>
+<p>则false positive rate 等于：</p>
+<p><span class="math display">\[
+\frac{\alpha}{\frac{\pi}{1-\pi}\beta + \alpha}
+\]</span></p>
+<p>如果发现有效因子本身这件事是一个极小概率事件，则无论我们得到了多低的 p-value，我们错误的拒绝原假设的概率（即 false positive rate）也是非常高的。<span class="citation">(<a href="#ref-HubertWolfgang20217Data" role="doc-biblioref">Dichtl et al. 2021</a>)</span>采用了一个多重检验框架，检验了学术界100个收益率预测模型，得出结论：<strong>模型中的预测能力全部来自数据迁就。</strong></p>
+</div>
+<div id="做贝叶斯的信徒" class="section level3">
+<h3>做贝叶斯的信徒</h3>
+<p><strong>我们需要对效用本身发生的概率（例如找到真实收益率因子的概率）有一个正确的先验判断，并用它和 p-value 一起计算出一个后验概率，并以此判断是否应该拒绝原假设。</strong></p>
+<p>Dr. Harvey <span class="citation">(<a href="#ref-HarveyLiu2016" role="doc-biblioref">Harvey, Liu, and Zhu 2016</a>)</span>将传统的 p-value 嵌入到贝叶斯框架中，提出了贝叶斯化 p-value（Bayesianized p-value）的概念，它是一个后验概率。</p>
+<p>贝叶斯化 p-value 由最小贝叶斯因子（minimum Bayes factor，MBF）和先验概率（prior odds）构成。贝叶斯因子是在原假设下观测到效用的似然性与在备择假设下观测到效用的似然性之间的比值。由于备择假设中，效用的概率分布未知，因此贝叶斯因子的取值有个范围。这个范围的下限就称为最小贝叶斯因子。<strong>它代表着贝叶斯框架下，我们拒绝原假设的倾向性（MBF 越小，我们越倾向拒绝原假设）。</strong></p>
+<p>贝叶斯化p-value 表达式如下：</p>
+<p><span class="math display">\[
+Bayesianized p-value = \frac{MBF \times prior odds}{1 + MBF \times prior odds}
+\]</span></p>
+<p>MBF 的两种表达式：</p>
+<p><span class="math display">\[
+\begin{aligned}
+MBF &amp;= -exp(1) \times p-value \times ln(p-value)
+MBF &amp;= exp(-t-statistics^2 /2)
+\end{aligned}
+\]</span></p>
+<p>贝叶斯p-value的内涵：它是一个后验概率，它回答了那个我们真正关心的问题：在（极端）事件发生的前提下，原假设为真的条件概率是多少，即我们梦寐以求的 prob(H|D)。</p>
 </div>
 </div>
 </div>
 <div id="参考文献" class="section level1 unnumbered">
 <h1>参考文献</h1>
 <div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-HubertWolfgang20217Data" class="csl-entry">
+Dichtl, Hubert, Wolfgang Drobetz, Andreas Neuhierl, and Viktoria-Sophie Wendt. 2021. <span>“Data Snooping in Equity Premium Prediction.”</span> <em>International Journal of Forecasting</em> 37 (1): 72–94. https://doi.org/<a href="https://doi.org/10.1016/j.ijforecast.2020.03.002">https://doi.org/10.1016/j.ijforecast.2020.03.002</a>.
+</div>
 <div id="ref-FamaFrench992Cross" class="csl-entry">
 Fama, Eugene F, and Kenneth R French. 1992. <span>“The Cross-Section of Expected Stock Returns.”</span> <em>The Journal of Finance</em> 47 (2): 427–65.
 </div>
 <div id="ref-Fisher1992Statistical" class="csl-entry">
 Fisher, Ronald Aylmer. 1992. <span>“Statistical Methods for Research Workers.”</span> In <em>Breakthroughs in Statistics</em>, 66–70. Springer.
+</div>
+<div id="ref-HarveyLiu2016" class="csl-entry">
+Harvey, Campbell R., Yan Liu, and Heqing Zhu. 2016. <span>“<span class="nocase">… and the Cross-Section of Expected Returns</span>.”</span> <em>The Review of Financial Studies</em> 29 (1): 5–68. <a href="https://doi.org/10.1093/rfs/hhv059">https://doi.org/10.1093/rfs/hhv059</a>.
 </div>
 <div id="ref-Liechty2008" class="csl-entry">
 Liechty, John, Campbell Harvey, and Merrill Liechty. 2008. <span>“Bayes Vs. Resampling: A Rematch”</span> 6 (January).
