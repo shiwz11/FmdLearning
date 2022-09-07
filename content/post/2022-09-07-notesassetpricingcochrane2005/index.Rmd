@@ -1,0 +1,18 @@
+---
+title: NOTESAssetPricingCochrane2005
+author: shiwz11
+date: '2022-09-07'
+slug: notesassetpricingcochrane2005
+categories:
+  - NOTES
+tags:
+  - AssetPricing
+bibliography: [AssetPricing.bib]
+---
+
+# preface
+
+- [website of Prof Cochrane](https://www.johnhcochrane.com/asset-pricing)
+
+Online class and additional materials here, you can also find the online class on bilibili.
+

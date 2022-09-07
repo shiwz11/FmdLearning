@@ -8,6 +8,12 @@ tags: []
 bibliography: [mybib.bib]
 ---
 
+文中内容来源于网络，仅用作个人学习笔记备忘，如有侵权请联系`shiwz11@hotmail.com`会立即删除！
+
+如果您偶然间发现这个网页，建议点击对应的超链接去关注原作者，相信这样能有更多收获！！
+
+祝好！
+
 # [实证资产定价（From 川总写量化）](https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzIyMDEwNDk1Mg==&action=getalbum&album_id=1515112944307585026&scene=173&from_msgid=2650881906&from_itemidx=1&count=3&nolastread=1#wechat_redirect)
 
 ## [收益率预测的贝叶斯收缩](https://mp.weixin.qq.com/s?__biz=MzIyMDEwNDk1Mg==&mid=2650875355&idx=1&sn=9fb5f0912dc9a6bbdab458ad49af1cf8&chksm=8c24944cbb531d5a9f4d7d5b1b9e7f9f4d218a030a26350f9f0402b477dccd18c67dd360b609&scene=178&cur_album_id=1515112944307585026#rd)
@@ -66,10 +72,55 @@ P-value 代表着原假设下观测到某（极端）事件的条件概率。即
 
 2. P-values do not measure the probability that the studied hypothesis is true, or the probability that the data were produced by random change alone.
 
+3. Scientific conclusions and business or policy decisions should not be based only on whether a p-value pass a specific threshold.
+
+4. Proper inference requires full reporting and transparency.
+
+5. A p-value, or  statistical significance, does not measure the size of an effect or the importance of a result.(统计上的显著未必有重要的经济意义)
+
+6. By itself, a p-value does not provide a good measure of evidence regarding a model or hypothesis.
+
+**如果一个效用本身越不可能发生，我们越要小心，因为会有大量的false positive**
+
+$\pi$: 现实中我们找到一个真实因果关系的概率；
+
+$\alpha$: 原假设为真时的显著性水平；
+
+$\beta$: 备择假设为真时检验正确的拒绝原假设的概率。
+
+则false positive rate 等于：
+
+$$
+\frac{\alpha}{\frac{\pi}{1-\pi}\beta + \alpha}
+$$
+
+如果发现有效因子本身这件事是一个极小概率事件，则无论我们得到了多低的 p-value，我们错误的拒绝原假设的概率（即 false positive rate）也是非常高的。[@HubertWolfgang20217Data]采用了一个多重检验框架，检验了学术界100个收益率预测模型，得出结论：**模型中的预测能力全部来自数据迁就。**
+
+### 做贝叶斯的信徒
+
+**我们需要对效用本身发生的概率（例如找到真实收益率因子的概率）有一个正确的先验判断，并用它和 p-value 一起计算出一个后验概率，并以此判断是否应该拒绝原假设。**
+
+Dr. Harvey [@HarveyLiu2016...]将传统的 p-value 嵌入到贝叶斯框架中，提出了贝叶斯化 p-value（Bayesianized p-value）的概念，它是一个后验概率。
+
+贝叶斯化 p-value 由最小贝叶斯因子（minimum Bayes factor，MBF）和先验概率（prior odds）构成。贝叶斯因子是在原假设下观测到效用的似然性与在备择假设下观测到效用的似然性之间的比值。由于备择假设中，效用的概率分布未知，因此贝叶斯因子的取值有个范围。这个范围的下限就称为最小贝叶斯因子。**它代表着贝叶斯框架下，我们拒绝原假设的倾向性（MBF 越小，我们越倾向拒绝原假设）。**
+
+贝叶斯化p-value 表达式如下：
+
+$$
+Bayesianized p-value = \frac{MBF \times prior odds}{1 + MBF \times prior odds}
+$$
 
 
+MBF 的两种表达式：
 
+$$
+\begin{aligned}
+MBF &= -exp(1) \times p-value \times ln(p-value)
+MBF &= exp(-t-statistics^2 /2)
+\end{aligned}
+$$
 
+贝叶斯p-value的内涵：它是一个后验概率，它回答了那个我们真正关心的问题：在（极端）事件发生的前提下，原假设为真的条件概率是多少，即我们梦寐以求的 prob(H|D)。
 
 
 
