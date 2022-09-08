@@ -115,13 +115,12 @@ MBF 的两种表达式：
 
 $$
 \begin{aligned}
-MBF &= -exp(1) \times p-value \times ln(p-value)
+MBF &= -exp(1) \times p-value \times ln(p-value) \\
 MBF &= exp(-t-statistics^2 /2)
 \end{aligned}
 $$
 
 贝叶斯p-value的内涵：它是一个后验概率，它回答了那个我们真正关心的问题：在（极端）事件发生的前提下，原假设为真的条件概率是多少，即我们梦寐以求的 prob(H|D)。
-
 
 
 

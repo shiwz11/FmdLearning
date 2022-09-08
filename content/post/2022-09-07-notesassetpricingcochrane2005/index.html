@@ -18,4 +18,109 @@ bibliography: [AssetPricing.bib]
 <li><a href="https://www.johnhcochrane.com/asset-pricing">website of Prof Cochrane</a></li>
 </ul>
 <p>Online class and additional materials here, you can also find the online class on bilibili.</p>
+<p>The central and unfinished task of absolute asset pricing is to understand and measure the souce of aggregate or macroeconomic risk that drive asset prices.</p>
+<p>This book advocates a discount factor/generalalized method of moments view of asset pricing theory and associated empirical procedures. The author summarizes asset pricing by two equations:</p>
+<p><span class="math display">\[
+\begin{aligned}
+p_t &amp;= E(m_{t+1} x_{t+1}) \\
+m_{t+1} &amp;= f(data, parameters)
+\end{aligned}
+\]</span></p>
+<p><span class="math inline">\(p_t\)</span>: asset price;</p>
+<p><span class="math inline">\(x_{t+1}\)</span>: asset payoff;</p>
+<p><span class="math inline">\(m_{t+1}\)</span>: stochastic discount factor</p>
+</div>
+<div id="consumption-based-model-and-overview" class="section level1">
+<h1>Consumption-Based Model and Overview</h1>
+<div id="basic-pricing-equation" class="section level2">
+<h2>Basic Pricing Equation</h2>
+<p>A investor’s first-order conditions give the basic consumption-based model.</p>
+<p><span class="math display">\[
+p_t = E_t\left[\beta\frac{u^{\prime}(c_{t+1})}{u^{\prime}(c_{t})}x_{t+1} \right]
+\]</span></p>
+<p>We model investors by a <em>utility function</em> defined over current and future values of consumption.</p>
+<p><span class="math display">\[
+U(c_t, c_{t+1}) = u(c_t) + \beta E_t[u(c_{t+1})]
+\]</span></p>
+<p>We often use a convenient power utility form:</p>
+<p><span class="math display">\[
+u(c_t) = \frac{1}{1-\gamma}c_{t}^{1-\gamma}
+\]</span></p>
+<p>The limit as <span class="math inline">\(\gamma \rightarrow 1\)</span> is:</p>
+<p><span class="math display">\[
+u(c) = ln(c)
+\]</span></p>
+<p><span class="math display">\[
+\max _{\{\xi\}} u\left(c_t\right)+E_t\left[\beta u\left(c_{t+1}\right)\right] \quad s.t.
+\]</span></p>
+<p><span class="math display">\[
+\begin{aligned}
+c_t &amp;=e_t-p_t \xi \\
+c_{t+1} &amp;=e_{t+1}+x_{t+1} \xi
+\end{aligned}
+\]</span></p>
+<p>Substituting the constraints into the objective, and setting the derivative with respect to <span class="math inline">\(\xi\)</span> equal to zero, we obtain the first-order condition for an optimal consumption and portfolio choice:</p>
+<p><span class="math display">\[
+p_tu^{\prime}(c_t) = E_t[\beta u^{\prime}(c_{t+1})x_{t+1}]
+\]</span></p>
+<p>or</p>
+<p><span class="math display">\[
+p_t = E_t\left[\beta \frac{u^{\prime}(c_{t+1})}{u^{\prime}(c_{t})}x_{t+1} \right]
+\]</span></p>
+</div>
+<div id="marginal-rate-of-substitutionstochastic-discount-factor" class="section level2">
+<h2>Marginal Rate of Substitution/Stochastic Discount Factor</h2>
+<p>Berak up the basic consumption-based pricing equation into:</p>
+<span class="math display">\[\begin{aligned}
+p &amp;= E(mx)\\
+
+m &amp;= \beta\frac{u^{\prime}(c_{t+1})}{u^{\prime}(c_{t})}
+\end{aligned}\]</span>
+<p>The price always comes at t, the payoff at t+1, and the expections is conditional on time-t information.</p>
+<p>If there is no uncertainty, we can express prices via the standard present value formula:</p>
+<p><span class="math display">\[
+p_t = \frac{1}{R^f}x_{x+1}
+\]</span></p>
+<p><span class="math display">\[
+m_{t+1} \equiv \beta \frac{u^{\prime}(c_{t+1})}{u^{\prime}(c_t)}
+\]</span></p>
+<p><span class="math display">\[
+p_t = E_t(m_{t+1}x_{t+1})
+\]</span></p>
+</div>
+<div id="prices-payoffs-and-notation" class="section level2">
+<h2>Prices, Payoffs, and Notation</h2>
+<div class="figure">
+<img src="https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220908105531.png" alt="" />
+<p class="caption">Price and Payoff</p>
+</div>
+<p><span class="math display">\[
+x_{t+1} = \left(1 + \frac{p_{t+1}}{d_{t+1}} \right)\frac{d_{t+1}}{d_{t}}
+\]</span></p>
+</div>
+<div id="classic-issues-in-finance" class="section level2">
+<h2>Classic Issues in Finance</h2>
+<p><strong>Risk Free Rate</strong></p>
+<p>The risk-free rate is related to the discount factor by:</p>
+<p><span class="math display">\[
+R^f = 1/E(m)
+\]</span></p>
+<p>With <strong>lognormal</strong> consumption growth and <strong>power</strong> utility</p>
+<p><span class="math display">\[
+r_t^f=\delta+\gamma E_t\left(\Delta \ln c_{t+1}\right)-\frac{\gamma^2}{2} \sigma_t^2\left(\Delta \ln c_{t+1}\right)
+\]</span></p>
+<blockquote>
+<p>Real interest rates are high when people are impatient (<span class="math inline">\(\delta\)</span>), when expected consumption growth is high (intertemporal substitution), or when risk is low (precautionary saving). A more curved utility function (<span class="math inline">\(\gamma\)</span>) or a lower elasticity of intertemporal substitution (<span class="math inline">\(1/\gamma\)</span>) means that interest rates are more sensitive to changes in expected consumption growth.</p>
+</blockquote>
+</div>
+<div id="abbreviation" class="section level2">
+<h2>Abbreviation</h2>
+<p><span class="math inline">\(\beta\)</span>: subjective discount factor</p>
+<p><span class="math inline">\(e\)</span>: Original consumption level</p>
+<p><span class="math inline">\(\xi\)</span>: The amount of the asset choose to buy</p>
+<p><span class="math inline">\(m_{t+1}\)</span>: The stochastic discount factor</p>
+<p><span class="math inline">\(R^f\)</span>: The gross risk-free rate</p>
+<p><span class="math inline">\(\frac{1}{R^f}\)</span>: The discount factor</p>
+<p><span class="math inline">\(R^e\)</span>: Excess return of a zero-cost portfolio</p>
+</div>
 </div>
