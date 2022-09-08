@@ -96,6 +96,23 @@ MBF &amp;= exp(-t-statistics^2 /2)
 <p>贝叶斯p-value的内涵：它是一个后验概率，它回答了那个我们真正关心的问题：在（极端）事件发生的前提下，原假设为真的条件概率是多少，即我们梦寐以求的 prob(H|D)。</p>
 </div>
 </div>
+<div id="股票多因子模型的回归检验" class="section level2">
+<h2><a href="https://mp.weixin.qq.com/s?__biz=MzIyMDEwNDk1Mg==&amp;mid=2650878239&amp;idx=1&amp;sn=1c4a15d8fd9046c75cbb2fb53bd13a9f&amp;chksm=8c248088bb53099ed1bd8db81b8be6cd22fad56a36ba726be7c600901263eae016849c20dd6c&amp;scene=178&amp;cur_album_id=1515112944307585026#rd">股票多因子模型的回归检验</a></h2>
+<p>一个多因子模型（K个因子）的表达式如下：</p>
+<p><span class="math display">\[
+E[R_i] = \beta_{\lambda}^{\prime}, \quad i = 1,2,\dots, N
+\]</span></p>
+<p><span class="math inline">\(R_i\)</span>: 股票i的超额收益</p>
+<p><span class="math inline">\(\beta_i\)</span>: 股票i的<span class="math inline">\(K\times 1\)</span>阶因子暴露(factor exposure or factor loading)向量</p>
+<p><span class="math inline">\(\lambda\)</span>: <span class="math inline">\(K\times 1\)</span>阶因子收益率均值向量</p>
+<p>多因子模型的核心问题：<strong>股票的（超额）收益率期望在截面上(即不同股票之间)为什么会有差异</strong></p>
+<blockquote>
+<p>The central economic question is why <strong>average returns</strong> vary across assets; expected returns of an asset should be high if that asset has high betas or risk exposure to factors that carry high risk premia.</p>
+</blockquote>
+<p><strong>多因子模型研究的是个股收益率均值在截面上（cross-sectional）的差异。我们不关心个股的收益率 R_i 在时间序列上是如何随着每期因子收益率来波动的（这是 model of variance），我们只关心 R_i 的期望 E[R_i] 在截面上和对应的 β_i 之间的关系（这是 model of the mean）。</strong></p>
+<p><strong>怎样找到最好的因子结构 —— 即哪些因子使得个股在截面上的预期收益率区分度高 —— 就是因子模型研究的问题。</strong></p>
+<p><img src="https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220908115036.png" /></p>
+</div>
 </div>
 <div id="参考文献" class="section level1 unnumbered">
 <h1>参考文献</h1>
