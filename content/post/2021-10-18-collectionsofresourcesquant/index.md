@@ -69,8 +69,18 @@ Review of Financial Studies
 
 # Literatures
 
+## Papers
+
 Murphy, K. P. Machine Learning A Probabilistic Perspective. MIT Press, 2012.
 
 James, G., Witten, D., Hastie, T., and Tibshirani, R. An Introduction to Statistical Learning: with applications in R. Springer, 2013
 
 Hastie, T., Tibshirani, R., and Friedman, J. The Elements of Statistical Learning: Data Mining, Inference and Prediction, 2nd Ed. Springer, 2011
+
+## Working Papers
+
+Factor Models, Machine Learnings, and Asset Pricing
+
+## Books
+
+Machine Learning in Asset Pricing

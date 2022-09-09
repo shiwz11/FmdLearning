@@ -125,6 +125,8 @@ $$
 ## [股票多因子模型的回归检验](https://mp.weixin.qq.com/s?__biz=MzIyMDEwNDk1Mg==&mid=2650878239&idx=1&sn=1c4a15d8fd9046c75cbb2fb53bd13a9f&chksm=8c248088bb53099ed1bd8db81b8be6cd22fad56a36ba726be7c600901263eae016849c20dd6c&scene=178&cur_album_id=1515112944307585026#rd)
 
 
+### 多因子模型的回归测试
+
 一个多因子模型（K个因子）的表达式如下：
 
 $$
@@ -147,5 +149,197 @@ $\lambda$: $K\times 1$阶因子收益率均值向量
 
 
 ![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220908115036.png)
+
+对于一个多因子模型，如何定量评估它是否能很好的解释$E[R_i]$呢？我们主要关注以下三个方面：**Estimate(估计)、Standard Errors(标准误)、Test(检验)**。
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220909150216.png)
+
+对于一个截面关系式：
+
+$$
+E[R_i] = \beta_i^{\prime} \lambda + \alpha_i
+$$
+
+其中：
+
+$\alpha_i$: 个股i的定价错误(pricing error)
+
+**只有有了准确的（无偏且相合）估计值和正确的标准误，才能评价因子是否有效**（比如正确计算因子收益率 λ 的置信区间，从而判断这个因子是否有风险溢价）
+
+多因子模型的回归检验中的重中之重、也是我们唯一关注的 test，就是**所有这些 α_i 联合起来是否在统计上足够接近零。**
+
+> We want to know whether all the pricing errors are jointly equal to zero.
+
+多因子模型回归检验的三点：
+
+1. 挑选因子，计算个股在这些因子上的暴露$\beta_i$;
+
+2. 找到个股（超额）收益率均值$E[R_i]$和因子暴露$\beta_i$在截面上的关系；
+
+3. 计算每个个股的定价错误$\alpha_i$，联合检验这些$\alpha_i$是否在统计上为零。
+
+### 时序回归
+
+如果模型中的因子是**Portfolio returns (即使用投资组合收益率作为因子)**，那么可以通过**时间序列(time-series regression)**来分析$E[R_i]$和$\beta_i$在截面上的关系！
+
+[@FamaFrench1993Common]提出的三因子模型中HML因子，它代表着 high book-to-market ratio 公司相对于 low book-to-market ratio 公司的超额收益，本身是一个投资组合的收益率。
+
+$$
+R_{it} = \alpha_i + \beta^{\prime}_{i}f_t + \varepsilon_{it}, \quad t = 1,2,\dots, T, \forall i
+$$
+
+$f_t$: t期因子向量(因子收益率)；
+
+$R_{it}$: 个股收益率；
+
+$\beta_i$: 个股i在因子上的暴露。
+
+上式在时序上取均值：
+
+$$
+E_T[R_i] = \alpha_i + \beta_i^{\prime}E_T[f_t]
+$$
+
+上式正是个股期望收益率和因子暴露在截面上的关系式。**当因子本身是投资组合时，我们只需要在时序上做回归得到因子暴露和截距。虽然只做了时序回归，但是通过在时序上取均值就可以从时序回归中得出 $E[R_i]$ 和 $\beta_i$ 在截面上的关系**。比较上面两个关系式不难发现，**时间序列回归中的截距 $α_i$ 恰恰就是截面关系式中的个股 i 的定价错误。**
+
+[@Jensen1972Capital]指出**因子收益率 $f_t$ 在时序上的均值就是因子的预期收益率**:
+
+$$
+\lambda = E_T[f]
+$$
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220909154342.png)
+
+时间序列回归得到的 E[R_i] = β_iE[f] 这条直线一定会经过 (0, 0) 和 (1, E[f]) 两点。
+
+所有蓝黑色点（个股）到这条红线的距离就是个股的定价错误 α_i，这条时序回归得到的直线并**不是以最小化 α_i 的平方**和为目的求出的，这是时序回归和下一节要介绍的截面回归的最大差别（截面回归是以最小化 α_i 的平方和为目标的）。
+
+若时序回归残差$\varepsilon_{it}$不相关且同方差，则时序回归参数的标准误可由OLS的标准公式给出！若$\varepsilon_{it}$满足IID Normal，则[@GRS1989Test]给出了$\alpha_i$的检验统计量(GRS检验)！
+
+$$
+\frac{T-N-K}{N}\left(1+E_T(f)^{\prime} \hat{\Omega}^{-1} E_T(f)\right)^{-1} \hat{\alpha}^{\prime} \hat{\Sigma}^{-1} \hat{\alpha} \sim F_{N, T-N-K}
+$$
+
+其中:
+
+$N$: Number of assets
+
+$K$: Number of factors
+
+$\hat{\Omega}$: $\frac{1}{T} \sum_{t=1}^T\left[f_t-E_T(f)\right]\left[f_t-E_T(f)\right]^{\prime}$
+
+**但是**，若$\varepsilon_{it}$不满足上述假设，则上述公式就是错误的，这时候需要用到[@Hansen1982Large]提出的GMM(Generalized Method of Momentums)，该方法可以解决OLS残差的**相关性和异方差性**，得到正确的估计以及标准误。
+
+时间序列回归得到多因子模型的过程最重要的三点：
+
+1. 因子**必须是 portfolio returns**，才可只进行时间序列回归而无需进一步的截面回归；时序回归得到了投资品在这些因子上的暴露 $β_i$；时序回归中得到的 $α_i$（截距项）就是截面关系上个股的定价错误。
+
+2. 将时序回归结果在时间上取均值，就得到个股收益率和因子暴露在截面上的关系。该关系的确定不以最小化 $α_i$ 的平方和为目标。
+
+3. 在时序回归残差 $ε_{it}$ 满足 IID Normal 的条件下，可以通过 GRS test 来检验 $α_i$；否则则可以通过 GMM 来检验 $α_i$。
+
+### 截面回归
+
+截面回归的最大好处是，因子可以不是 portfolio returns。比如因子可以是 GDP、CPI、利率等。但是在那之前，我们必须先通过时间序列回归得到个股在不同因子上的暴露。因此，**截面回归的第一步仍然是时序回归，以确定因子暴露。**
+
+时序上我们关注的是这些因子的变化对个股收益率变化的解释程度（model of variance），这由个股收益率对这些因子的敏感程度，即时序回归的系数 $β_i$，而非因子本身的大小决定。第二，行业不同、基本面存在差异的公司受宏观经济的影响也不同，因此它们在同样宏观经济指标上的暴露势必不同。
+
+首先进行时序回归确定$\beta_i$:
+
+$$
+R_{it} = a_i + \beta_{i}^{\prime}f_t + \varepsilon_{it}, \quad t =1, 2, \dots, T, \forall i
+$$
+
+第二步：**截面回归，从而确定每个因子的预期收益率**
+
+$$
+E[R_i] = \beta_{i}^{\prime}\lambda + \alpha_i, \quad i=1,2,\dots,N
+$$
+
+$E[R_i]$: 个股在整个时序上的预期收益率
+
+截面回归 OLS 将通过原点并最小化所有个股残差 $α_i$ 的平方和。
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220909160624.png)
+
+由于在截面上个股的残差很明显存在相关性且八成不是IID的，会导致OLS的标准误严重低估，此时可使用**GLS**，GLS考虑了**残差的协方差矩阵**因此可以得到正确的标准误，但是协方差矩阵难以估计，严重降低其实用性。这时候，我们再次转向**GMM**，可以估计出我们需要的统计量，但是需要注意的是，截面回归中使用的$\beta_i$并不是真实的，而是我们从时序回归中估计出来的，因此需要使用[@Shanken1992Estimation]中提出的Shanken Correction。联合Shanken Correction 和 GMM就可以检验$\alpha_i$是否为0了。
+
+小结：
+
+1. 截面回归不要求因子是 portfolio returns，应用更加广泛（当然因子也可以是 portfolio returns）。但是截面回归的第一步仍然是通过时间序列回归得到的是投资品在因子上的暴露 β_i。第二步才是截面回归。因此截面回归又称为 two-pass regression estimate。
+
+2. 得到 β_i 后，使用个股的平均收益率 E[R_i] 和 β_i 进行截面回归（一共 N 个点，每个点对应一对儿 E[R_i] 和 β_i），回归得到因子的期望收益率 λ 和个股的残差 α_i。常见的回归方法是 OLS —— 以最小化残差平方和为目标，或 GLS —— 考虑残差之间的相关性。
+
+3. 由于 β_i 是估计值，且 α_i 的协方差矩阵难以估计，更方便的办法是使用大杀器 GMM 得到准确的估计以及检验 α_i 是否为零。
+
+### 时序回归VS截面回归
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220909161646.png)
+
+和时序回归得到的最终 E[R_i] = β_iλ 关系式相比，截面回归利用了所有个股的数据。从某种意义上来说，这更合理。对于时序回归，因子的平均收益率就是该因子组合在 T 期收益率上的均值：λ = E_T[f]。而对于截面回归来说，因子收益率通过 OLS 或 GLS 确定，取值和 E_T[f] 不同。这是二者最大的区别。
+
+### Fama-MacBeth回归
+
+[@FamaMacBeth1973Risk]提出该回归，是一个两步截面回归检验方法；它非常巧妙排除了残差在截面上的相关性对标准误的影响。
+
+Fama-Macbet回归第一步也是通过时序回归得到个股收益率在因子上的暴露$\beta_i$；
+
+第二步是截面回归，但不同的是，Fama-Macbeth在每个事件t上进行了一次截面回归。
+
+$$
+R_{it} = \beta^{\prime}_{i} \lambda_t + \alpha_{it}, \quad i=1,2,\dots,N\ \text{for each t}
+$$
+
+然后把T次截面回归得到的参数取均值作为回归的estimate：
+
+
+\begin{aligned}
+\hat{\lambda} &= \frac{1}{T} \sum_{t=1}^{T} \hat{\lambda}_t \\
+\hat{\alpha}_i &= \frac{1}{T} \sum_{t=1}^{T} \hat{\alpha}_{it} 
+\end{aligned}
+
+
+$\lambda$和$\alpha$的标准误如下：
+
+\begin{aligned}
+\sigma^2(\hat{\lambda}) &=\frac{1}{T^2} \sum_{t=1}^T\left(\hat{\lambda}_t-\hat{\lambda}\right)^2 \\
+\sigma^2\left(\hat{\alpha}_i\right) &=\frac{1}{T^2} \sum_{t=1}^T\left(\hat{\alpha}_{i t}-\hat{\alpha}_i\right)^2
+\end{aligned}
+
+Fama-Macbeth回归和传统截面回归的区别是：
+
+1. Fama-MacBeth 截面回归先在不同的 t 上分别用 $R_{it}$ 和做回归，再把回归的结果 $λ_t$ 和 $α_{it}$ 在时序上取均值得到 $λ = E[λ_t]$ 和 $α = E[α_{it}]$；
+
+2. 传统截面回归是先把 $R_{it}$ 在时序上取均值得到 $E[R_{it}]$ 然后再进行一次截面回归，直接得到 $λ$ 和 $α$。
+
+
+**优势：**
+
+排除了残差截面相关性对标准误的影响！
+
+**不足：**
+
+1. Fama-MacBeth 回归对于残差在时序上的相关性无能为力
+
+2. 在截面回归中用到的 $β_i$ 并不是已知的，而是通过时间序列得到的估计值（generated regressors），因此存在误差。Fama-MacBeth 回归对此也无能为力，需要 Shanken correction。
+
+
+**Fama-MacBeth**回归要点：
+
+1. Fama-MacBeth 回归也是一种截面回归，因子可以是 portfolio returns，也可以是别的指标。和普通截面回归一样，它的第一步也是通过时间序列回归得到的是投资品在因子上的暴露 β_i。
+
+2. 得到 β_i 后，在每期（共 T 期）的截面上使用个股的收益率 R_it 和 β_i 进行截面回归，回归得到该期因子的收益率 λ_t 和个股的残差 α_it。通过 T 次截面回归、得到 T 个的估计后，将它们取均值得到因子收益率均值 λ = E[λ_t] 和个股残差均值 α = E[α_it]。
+
+3. Fama-MacBeth 回归排除了残差截面相关性对标准误的影响，但是对时序相关性无能为力
+
+
+
+
+
+
+
+
+
+
 
 `r if (knitr::is_html_output()) '# 参考文献 {-}'`
