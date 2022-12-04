@@ -333,12 +333,29 @@ Fama-Macbeth回归和传统截面回归的区别是：
 3. Fama-MacBeth 回归排除了残差截面相关性对标准误的影响，但是对时序相关性无能为力
 
 
+# [The Promises and Pitfalls of Factor Timing](https://jacobslevycenter.wharton.upenn.edu/wp-content/uploads/2017/08/The-Promises-and-Pitfalls-of-Factor-Timing-2.pdf)
 
+## The literature
 
+[@Campbell1988Stock] found evidence that the CAPE ratio (cyclically adjusted price-to-earnings ratio) could predict long-term (10-year ahead) aggregate equity reutrns. The rationale was based on simple mean-reversion in stock prices.
 
+[@Huang2015Investor] presented compelling evidence that "sentiment" indicators counld be predictive at 1-month horizons.
 
+- Valuation
 
+[@Garcia2015Low]
 
+- Sentiment
+
+[@Baker2006Investor]
+
+- Macroeconomic
+
+[@Winkelmann2013Macro]
+
+## Which Signals might predict Factor Returns?
+
+![Main Categories of Factor Predictors](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20220927104226.png)
 
 
 

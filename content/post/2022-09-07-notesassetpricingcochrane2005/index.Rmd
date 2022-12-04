@@ -134,10 +134,24 @@ $$
 With **lognormal** consumption growth and **power** utility
 
 $$
-r_t^f=\delta+\gamma E_t\left(\Delta \ln c_{t+1}\right)-\frac{\gamma^2}{2} \sigma_t^2\left(\Delta \ln c_{t+1}\right)
+r_t^f=\delta+\gamma E_t\left(\Delta \ln c_{t+1}\right)-\frac{\gamma^2}{2} \sigma_t^2\left(\Delta \ln c_{t+1}\right)  \qquad (1.7)
 $$
 
 > Real interest rates are high when people are impatient ($\delta$), when expected consumption growth is high (intertemporal substitution), or when risk is low (precautionary saving). A more curved utility function ($\gamma$) or a lower elasticity of intertemporal substitution ($1/\gamma$) means that interest rates are more sensitive to changes in expected consumption growth.
+
+
+**Risk Corrections**
+
+Payoffs that are positively correlated with consumption growth have lower prices, to compensate investors for risk.
+
+$$
+\begin{aligned}
+p &= \frac{E(x)}{R^f} + cov(m,x) \\
+E(R^i) - R^f &= -R^f cov(m, R^i)
+\end{aligned}
+$$
+
+Expected returns are proportional to the covariance of returns with discount factors.
 
 
 
