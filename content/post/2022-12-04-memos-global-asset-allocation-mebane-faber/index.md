@@ -9,4 +9,12 @@ tags:
   - AssetAllocation
 ---
 
+# Preface
+
+- [The idea farm Mebane Faber](https://theideafarm.com/)：可以在此处白嫖到大量的research
+
+- [Blog Mebane Faber](https://mebfaber.com):作者的博客
+
+
+
 
