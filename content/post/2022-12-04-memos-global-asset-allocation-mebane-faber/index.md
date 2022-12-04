@@ -19,6 +19,14 @@ tags:
 
 # A history of stocks, bonds and bills
 
+# The benchamrk Portfolio: 60/40
+
+The most venerable asset allocation model: simply invest 60% in stock (US SPX 500) and 40% in 10-year U.S. government bonds.
+
+# Asset Class Building Blocks
+
+> I think the single most important thing that you can do is diversify your portfolio. --Paul Tudor Jones, Founder Tudor Investment Corporation
+
 
 
 
