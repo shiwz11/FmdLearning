@@ -15,6 +15,10 @@ tags:
 
 - [Blog Mebane Faber](https://mebfaber.com):作者的博客
 
+- [原书链接](https://mebfaber.com/wp-content/uploads/2016/04/GAA-Book-1.pdf)
+
+# A history of stocks, bonds and bills
+
 
 
 
