@@ -27,6 +27,14 @@ The most venerable asset allocation model: simply invest 60% in stock (US SPX 50
 
 > I think the single most important thing that you can do is diversify your portfolio. --Paul Tudor Jones, Founder Tudor Investment Corporation
 
+# The Risk PariTy and All Seasons Portfolios
+
+# [The Permanent Portfolio](https://mebfaber.com/2015/05/29/chapter-5-the-permanent-portfolio/)
+
+# [The Global Market Portfolio](https://mebfaber.com/2015/05/29/chapter-5-the-permanent-portfolio/)
+
+- [Strategic Asset Allocation: The Global Multi-Asset Market Portfolio](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2170275)
+
 
 
 
