@@ -81,6 +81,18 @@ Hastie, T., Tibshirani, R., and Friedman, J. The Elements of Statistical Learnin
 
 Factor Models, Machine Learnings, and Asset Pricing
 
-## Books
+# Books
 
-Machine Learning in Asset Pricing
+## Factor Investing and Portfolio management/FOF management
+
+- Asset Management: A Systematic Approach To Factor Investing
+
+- Your Complete guide to Factor-based Investing
+
+- Machine Learning in Asset Pricing
+
+- Asset Pricing (Pro. Cochrane)
+
+## Modeling Tolls
+
+- Mostly Harmless Econometrics

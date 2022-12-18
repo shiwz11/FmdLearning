@@ -35,6 +35,17 @@ The most venerable asset allocation model: simply invest 60% in stock (US SPX 50
 
 - [Strategic Asset Allocation: The Global Multi-Asset Market Portfolio](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2170275)
 
+# The Rob Arnott Portfolio
+
+# The Marc Faber Portfolio
+
+# The Endowment Portfolio: Swensen, El-Erian, and Ivy
+
+# The Warren Buffett Asset Allocation Portfolio
+
+10% in short term government bonds and 90% in a very low-cost SP 500 index fund.
+
+
 
 
 
