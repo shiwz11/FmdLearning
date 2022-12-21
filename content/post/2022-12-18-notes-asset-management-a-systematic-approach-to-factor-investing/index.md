@@ -127,6 +127,49 @@ The pain of losses to be greater than the joy from gains. Loss aversion utility 
 
 Decision weights allow investors to potentially severely overweight probability events--including both disasters and winning the lottery.
 
+We can write prospect theory as a form of expected utility:
+
+$$
+U = \sum w(p_s)  U(W_s)
+$$
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20221221112159.png)
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20221221112603.png)
+
+## Disappointment Aversion
+
+The asset owner cares more about downside versus upside outcomes.
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20221221112908.png)
+
+Investors overweight losses relative to gains, just like in loss aversion utility. What is different to loss aversion is that the **reference point** is endogenous.
+
+## Habit Utility
+
+Habit utility falls into a class of utility funcitons that define bad times not just by wealth outcomes, but also an **investor's environment.**
+
+It is wealth **relative to a reference point that is important**.
+
+- risk aversion is endogenous
+
+- habit evolves over time
+
+## Catching up with the Joneses
+
+What matter is your performance relative to your peers.
+
+## Uncertainty Aversion (Ambiguity Aversion)
+
+*Knight uncertainty*
+
+- [Ambiguity in asset pricing and portfolio choice: a review of the literature](https://link.springer.com/article/10.1007/s11238-012-9343-2)
+
+- [Obervable Long-Run Ambiguity and Long-Run Risk](https://www.semanticscholar.org/paper/Observable-Long-Run-Ambiguity-and-Long-Run-Risk-Ulrich/df8dc1ddd88bde7108112a8e32feca223122d02e)
+  Shows how the set of beliefs evolve over time and how they can be used to infer future asset prices.
+
+# Picking Up Nickels and Dimes in Front of a Steamroller Redux
+
 
 
 
