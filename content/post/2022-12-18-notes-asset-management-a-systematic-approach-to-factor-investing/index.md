@@ -168,9 +168,21 @@ What matter is your performance relative to your peers.
 - [Obervable Long-Run Ambiguity and Long-Run Risk](https://www.semanticscholar.org/paper/Observable-Long-Run-Ambiguity-and-Long-Run-Risk-Ulrich/df8dc1ddd88bde7108112a8e32feca223122d02e)
   Shows how the set of beliefs evolve over time and how they can be used to infer future asset prices.
 
-# Picking Up Nickels and Dimes in Front of a Steamroller Redux
+## Picking Up Nickels and Dimes in Front of a Steamroller Redux
 
+# Mean-Variance Investing
 
+## Mean-Variance Frontiers
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20221230095856.png)
+
+## Diversification
+
+Figure 3.3 plots the United States and Japan mean-variance frontier of different correlation values. As the correlation decreases, the tip of the mean-variance frontier pushes to the left.
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20221230101555.png)
+
+![](https://cdn.jsdelivr.net/gh/shiwz11/pics_public/20221230101733.png)
 
 
 
